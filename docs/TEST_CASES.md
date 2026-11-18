@@ -1,0 +1,36 @@
+# Test Cases & Verification Matrix
+
+All 50 automated tests run via `./mvnw test` across 10 test classes.
+
+| ID | Category | Input / Scenario | Expected Outcome | JUnit Test Class & Method |
+| --- | --- | --- | --- | --- |
+| TC01 | Lifecycle (State) | Incident walked `NEW -> CLASSIFIED -> ASSIGNED -> ACKNOWLEDGED -> IN_PROGRESS -> PENDING_INFO -> IN_PROGRESS -> RESOLVED -> VERIFIED -> CLOSED` | All statuses advance, load increments/releases, `serviceExperience` increments | `IncidentStateTest.fullLifecycleFromNewToClosed` |
+| TC02 | Illegal Transition | Call `close()` directly on a `NEW` incident | Throws `InvalidStateTransitionException` | `IncidentStateTest.newToClosedThrowsInvalidStateTransition` |
+| TC03 | Illegal Transition | Call `close()` on `RESOLVED` without `VERIFIED` | Throws `InvalidStateTransitionException` | `IncidentStateTest.resolvedToClosedWithoutVerifyThrowsInvalidStateTransition` |
+| TC04 | Reassignment | Reassign `IN_PROGRESS` incident from `T101` to `T102` | Moves to `ASSIGNED`, releases `T101` load, increments `T102` load | `IncidentStateTest.reassignTransfersWorkloadBetweenTechnicians` |
+| TC05 | Decline | Assigned technician declines with reason | Returns to `CLASSIFIED`, clears assignee, records decliner | `IncidentStateTest.declineAssignmentReturnsToClassifiedAndRecordsDecliner` |
+| TC06 | Reopen | Reporter rejects fix on `RESOLVED` incident | Moves to `IN_PROGRESS`, clears `resolvedAt`, restores load | `IncidentStateTest.reopenFromResolvedMovesBackToInProgress` |
+| TC07 | Workload Boundary | Assign technician with `currentLoad == maxLoad` | Throws `WorkloadExceededException`; status stays `CLASSIFIED` | `IncidentStateTest.assigningOverMaxLoadThrowsWorkloadExceededException` |
+| TC08 | Priority Formula | Same service/severity with 5, 50, 100 affected users | Scores `36.0`, `43.2`, `54.0` (`1.0`, `1.2`, `1.5` factors) | `PriorityStrategyTest.weightedScoreCalculatesExactFormulaAcrossUserTiers` |
+| TC09 | Boundary Thresholds | Inputs hitting `60`, `54`, `30`, `27`, `10`, `9` | Classified `P1`, `P2`, `P2`, `P3`, `P3`, `P4` | `PriorityStrategyTest.weightedScoreBoundaryThresholdsClassifyCorrectly` |
+| TC10 | Rule-Based Priority | Criticality 5 & impact 4 (`score=40`); Security & impact 4 | Both promoted to `P1` under `RuleBasedPriorityStrategy` | `PriorityStrategyTest.ruleBasedPromotesCriticality5WithImpact4ToP1`, `ruleBasedPromotesSecurityCategoryWithImpact4ToP1` |
+| TC11 | Assignment Strategies | Pool of 3 technicians evaluated across all 5 strategies | Skill->`T102`, Load->`T101`, RR cycles, Exp->`T102`, Priority->`T201`/`T101` | `AssignmentStrategyTest.*` (all 6 methods) |
+| TC12 | Encapsulation | Reflect `AuditEntry` setters; mutate getter collections | Zero `set*` methods; `UnsupportedOperationException` on mutations | `DomainModelEncapsulationTest.auditEntryExposesNoSetters`, `domainCollectionsReturnUnmodifiableViews` |
+| TC13 | Edit Guard | Edit incident after `RESOLVED` | Throws `InvalidIncidentException` | `DomainModelEncapsulationTest.editingResolvedIncidentThrowsInvalidIncidentException` |
+| TC14 | Course Similarity | `"Payment application unavailable"`, `"Payment transaction failing"`, `"Unable to make payment"` | All 3 pairwise similarities `>= 0.2` and `< 0.8` | `TfIdfSimilarityEngineTest.coursePaymentExamplesAreAllFlaggedRelated` |
+| TC15 | Exact Duplicate vs Unrelated | Near-identical vs unrelated office printer text | Near-identical `>= 0.8`; unrelated `< 0.2` | `TfIdfSimilarityEngineTest.nearIdenticalDescriptionsExceedExactDuplicateThreshold`, `unrelatedDescriptionsRemainBelowRelatedThreshold` |
+| TC16 | Observer Rules | Publish `CREATED`, `CLASSIFIED`, `ASSIGNED`, `SLA_APPROACHING`, `SLA_VIOLATED` | Exact recipients (`T101`/`T201`/`A001`) & channels (`IN_APP`/`EMAIL`/`SMS`) | `ObserverPatternTest.*` (all 4 methods) |
+| TC17 | Sync Create Pipeline | Create P1 Payment incident via `IncidentService` | Runs `NEW -> CLASSIFIED -> ASSIGNED`, 3 audits, multi-channel alerts | `IncidentServiceIntegrationTest.createPipelineRunsSynchronouslyAndAuditsAndNotifiesAllSteps` |
+| TC18 | Duplicate Exception | Same reporter submits identical Payment outage `< 10m` | Throws `DuplicateIncidentException`; different symptoms link related | `IncidentServiceIntegrationTest.exactDuplicateThrowsExceptionAndRelatedIncidentsAreLinked` |
+| TC19 | Unassigned Queue | All technicians at `maxLoad`; submit `P4` then `P1` | Stay `CLASSIFIED`; `PriorityQueue` returns `P1` before `P4`; admins notified | `IncidentServiceIntegrationTest.unassignedQueueOrdersByPriorityWhenAllTechniciansAtMaxLoad` |
+| TC20 | Decline & Auto-Reassign | `T101` declines assignment | Automatically reassigns `T102` excluding `T101` | `IncidentServiceIntegrationTest.technicianDeclineReassignsExcludingDecliner` |
+| TC21 | SLA Override & Missing | Service override `2m/10m`; delete `P3` policy | Uses `2m/10m`; missing policy throws `MissingSlaException` | `IncidentServiceIntegrationTest.serviceSlaOverrideAndMissingSlaAreEnforced` |
+| TC22 | Strategy Runtime Swap | Switch to `RULE_BASED` + `LOAD_BASED` | Subsequent incident applies new priority & load routing | `IncidentServiceIntegrationTest.runtimeStrategySwitchUpdatesPriorityAndAssignmentSelection` |
+| TC23 | Email SMTP Fallback | Set `EmailNotifier` mode `smtp` with no mail server | Catches `NotificationDeliveryException`, falls back to `IN_APP`, audits error | `IncidentServiceIntegrationTest.emailSmtpFailureFallsBackToInAppAndAuditsError` |
+| TC24 | Regression: Null SlaInfo | Persist `NEW` incident before `classify()` | Saves cleanly with default `ON_TRACK` `SlaInfo` | `IncidentServiceIntegrationTest.newIncidentPersistsBeforeClassificationWithDefaultSlaInfo` |
+| TC25 | Web Smoke Lifecycle | Real form login -> report -> acknowledge -> start -> resolve -> verify -> feedback -> close | Full workflow succeeds `200/302`; audit timeline rendered | `WebFlowAndSecurityTest.smokeTestFullLifecycleThroughWebControllersAndViews` |
+| TC26 | Security & Ownership | Employee hits `/admin/dashboard`, another employee's incident, or omits CSRF | Returns `403 Forbidden`; `/register` creates `EMPLOYEE` only | `WebFlowAndSecurityTest.employeeBlockedFromAdminAndOtherEmployeesIncident`, `csrfRequiredOnWebPostsAndSelfRegistrationCreatesEmployeeOnly` |
+| TC27 | SLA Monitor & Escalation | Advance clock to 83%, 5m+, 10m+, 15m+ on unacknowledged `P1` | `AT_RISK`, 1 `SlaViolation`, escalates `T201 -> A001 -> A002` | `PhaseDIntelligenceSlaAndApiTest.slaApproachingWarningBreachSingleRecordAndMultiLevelEscalation` |
+| TC28 | Outage & Root Cause | 3 open `Database` incidents in 1h, then `Payment` incident | Flags `outageFlagged=true`; sets `"Possible root cause: Database"` | `PhaseDIntelligenceSlaAndApiTest.outageCorrelationAndDependencyRootCauseFlagged` |
+| TC29 | AI & Reports & REST | Past fix match, Gemini fallback, 7d recurring report, `/api/v1/**` Basic Auth + Swagger | Returns `201/200`, `401` anon, `403` wrong role, `4.0` avg feedback | `PhaseDIntelligenceSlaAndApiTest.*` |
+| TC30 | Cold DB Seed | `dataSeeder.seedIfEmpty()` on empty H2 DB (twice) | Seeds 9 cats, 8 svcs, 4 SLAs, 12 users, 2 teams, 30 incidents (`INC1001`..); idempotent | `DataSeederTest.seedsCleanEmptyDatabaseAndIsIdempotent` |

@@ -25,6 +25,7 @@ import com.iitsm.exception.PersistenceFailureException;
 import com.iitsm.exception.ServiceNotFoundException;
 import com.iitsm.exception.UnauthorizedException;
 import com.iitsm.intelligence.AiTextService;
+import com.iitsm.intelligence.KeywordClassifier;
 import com.iitsm.intelligence.OutageCorrelator;
 import com.iitsm.intelligence.TechnicianRecommender;
 import com.iitsm.intelligence.TechnicianRecommender.TechnicianRecommendation;
@@ -75,6 +76,7 @@ public class IncidentService {
     private final AdminCatalogService adminCatalogService;
     private final TfIdfSimilarityEngine similarityEngine;
     private final AiTextService aiTextService;
+    private final KeywordClassifier keywordClassifier;
     private final OutageCorrelator outageCorrelator;
     private final TechnicianRecommender technicianRecommender;
     private final AuditService auditService;
@@ -93,6 +95,7 @@ public class IncidentService {
                            AdminCatalogService adminCatalogService,
                            TfIdfSimilarityEngine similarityEngine,
                            AiTextService aiTextService,
+                           KeywordClassifier keywordClassifier,
                            OutageCorrelator outageCorrelator,
                            TechnicianRecommender technicianRecommender,
                            AuditService auditService,
@@ -109,6 +112,7 @@ public class IncidentService {
         this.adminCatalogService = adminCatalogService;
         this.similarityEngine = similarityEngine;
         this.aiTextService = aiTextService;
+        this.keywordClassifier = keywordClassifier;
         this.outageCorrelator = outageCorrelator;
         this.technicianRecommender = technicianRecommender;
         this.auditService = auditService;
@@ -545,6 +549,12 @@ public class IncidentService {
     @Transactional(readOnly = true)
     public Optional<Category> suggestCategory(String description) {
         return aiTextService.suggestCategory(description, categoryRepository.findAllByOrderByNameAsc());
+    }
+
+    /** Suggests an affected service matching the supplied incident description. */
+    @Transactional(readOnly = true)
+    public Optional<ServiceEntity> suggestService(String description) {
+        return keywordClassifier.suggestService(description, serviceRepository.findAllWithDependencies());
     }
 
     private void attemptAutoAssign(Incident incident, String actorCode) {

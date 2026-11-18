@@ -504,6 +504,11 @@ public class Incident {
         return priority;
     }
 
+    /** Returns business-impact label (Critical, High, Medium, Low) for the assigned priority. */
+    public String getBusinessImpactLabel() {
+        return priority == null ? "Unclassified" : priority.getLabel();
+    }
+
     public double getPriorityScore() {
         return priorityScore;
     }

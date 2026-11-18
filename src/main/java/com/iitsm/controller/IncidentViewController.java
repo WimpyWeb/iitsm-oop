@@ -117,7 +117,7 @@ public class IncidentViewController {
         return "incidents/search";
     }
 
-    /** HTMX fragment returning live auto-category suggestion and similar 24h incident warnings. */
+    /** HTMX fragment returning live auto-category, service suggestion, and similar 24h warnings. */
     @GetMapping("/suggest")
     public String liveSuggestions(@RequestParam(required = false) Long serviceId,
                                   @RequestParam(required = false) String description,
@@ -125,10 +125,14 @@ public class IncidentViewController {
         String suggestedCat = incidentService.suggestCategory(description)
                 .map(c -> c.getName())
                 .orElse(null);
+        String suggestedSvc = incidentService.suggestService(description)
+                .map(s -> s.getName())
+                .orElse(null);
         List<Incident> related = (serviceId != null && description != null && description.length() >= 5)
                 ? incidentService.findRelatedCandidates(serviceId, description)
                 : List.of();
         model.addAttribute("suggestedCategory", suggestedCat);
+        model.addAttribute("suggestedService", suggestedSvc);
         model.addAttribute("relatedCandidates", related);
         return "incidents/fragments :: suggestions";
     }

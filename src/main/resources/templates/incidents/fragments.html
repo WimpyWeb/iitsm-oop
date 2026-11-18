@@ -2,8 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:fragment="suggestions">
-    <div th:if="${suggestedCategory != null}" class="flash flash-success" style="margin-top:0.4rem;">
-        AI Suggested Category: <strong th:text="${suggestedCategory}">Application</strong>
+    <div th:if="${suggestedCategory != null or suggestedService != null}" class="flash flash-success" style="margin-top:0.4rem;">
+        <span th:if="${suggestedCategory != null}">
+            AI Suggested Category: <strong th:text="${suggestedCategory}">Application</strong>
+        </span>
+        <span th:if="${suggestedCategory != null and suggestedService != null}"> | </span>
+        <span th:if="${suggestedService != null}">
+            Suggested Service: <strong th:text="${suggestedService}">Payment</strong>
+        </span>
     </div>
     <div th:if="${relatedCandidates != null and !#lists.isEmpty(relatedCandidates)}" class="flash flash-warn">
         <strong>Possible Related Incidents (last 24h on this service):</strong>
