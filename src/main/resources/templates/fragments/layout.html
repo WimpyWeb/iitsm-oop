@@ -21,9 +21,11 @@
             </span>
             <span sec:authorize="hasRole('TECHNICIAN')">
                 <a th:href="@{/technician/dashboard}">Technician Queue</a>
+                <a th:href="@{/reports}">Reports</a>
             </span>
             <span sec:authorize="hasRole('ADMIN')">
                 <a th:href="@{/admin/dashboard}">Admin Console</a>
+                <a th:href="@{/reports}">Reports</a>
                 <a th:href="@{/admin/users}">Users</a>
                 <a th:href="@{/admin/teams}">Teams</a>
                 <a th:href="@{/admin/catalog}">Catalog &amp; SLA</a>

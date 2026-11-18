@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Analytics & Reports')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <h2>Live Operational Reports &amp; Recurring Problems</h2>
+
+    <div id="kpi-live-container"
+         hx-get="/reports/kpi-fragment"
+         hx-trigger="every 15s"
+         hx-swap="innerHTML">
+        <div th:fragment="kpiSection">
+            <div class="grid-cards">
+                <div class="stat-card">
+                    <h4>Total Incidents</h4>
+                    <div class="stat-val" th:text="${report.totalIncidents()}">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Open</h4>
+                    <div class="stat-val" th:text="${report.openIncidents()}">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Critical (P1)</h4>
+                    <div class="stat-val" style="color:#dc2626;" th:text="${report.criticalIncidents()}">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Resolved / Closed</h4>
+                    <div class="stat-val" th:text="${report.resolvedIncidents()}">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>SLA Violations</h4>
+                    <div class="stat-val" style="color:#dc2626;" th:text="${report.slaViolationsCount()}">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>SLA Compliance</h4>
+                    <div class="stat-val" th:text="${report.slaCompliancePercent() + '%'}">100%</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Avg Resolution</h4>
+                    <div class="stat-val" th:text="${report.avgResolutionMinutes() + 'm'}">0m</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Avg Feedback</h4>
+                    <div class="stat-val" th:text="${report.avgFeedbackRating() + ' / 5'}">0 / 5</div>
+                </div>
+            </div>
+
+            <article>
+                <h3>Recurring Problems (Last 7 Days, &ge; 3 Incidents)</h3>
+                <div class="grid">
+                    <div>
+                        <h4>Recurring Services</h4>
+                        <ul>
+                            <li th:each="e : ${report.recurringServices7d().entrySet()}"
+                                th:text="${e.key + ': ' + e.value + ' incidents'}">Payment: 3</li>
+                            <li th:if="${#maps.isEmpty(report.recurringServices7d())}">None exceeding threshold.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Recurring Categories</h4>
+                        <ul>
+                            <li th:each="e : ${report.recurringCategories7d().entrySet()}"
+                                th:text="${e.key + ': ' + e.value + ' incidents'}">Application: 3</li>
+                            <li th:if="${#maps.isEmpty(report.recurringCategories7d())}">None exceeding threshold.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Top Keywords &amp; Repeated Fixes</h4>
+                        <p><strong>Keywords:</strong>
+                            <span th:each="kw, st : ${report.topRecurringKeywords()}"
+                                  th:text="${kw + (st.last ? '' : ', ')}">payment</span>
+                            <span th:if="${#lists.isEmpty(report.topRecurringKeywords())}">None</span>
+                        </p>
+                        <ul>
+                            <li th:each="r : ${report.repeatedResolutions().entrySet()}"
+                                th:text="${r.key + ' (' + r.value + 'x)'}">Fix</li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <div class="grid" style="margin-top:1.25rem;">
+        <article>
+            <h4>Incidents by Priority</h4>
+            <canvas id="priorityChart"></canvas>
+        </article>
+        <article>
+            <h4>Service Analysis</h4>
+            <canvas id="serviceChart"></canvas>
+        </article>
+        <article>
+            <h4>Technician Workload</h4>
+            <canvas id="workloadChart"></canvas>
+        </article>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    const priorityMap = /*[[${report.incidentsByPriority()}]]*/ {};
+    const serviceMap = /*[[${report.incidentsByService()}]]*/ {};
+    const workloadMap = /*[[${report.technicianWorkload()}]]*/ {};
+
+    if (window.Chart) {
+        new Chart(document.getElementById('priorityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(priorityMap),
+                datasets: [{
+                    data: Object.values(priorityMap),
+                    backgroundColor: ['#dc2626', '#ea580c', '#ca8a04', '#2563eb']
+                }]
+            }
+        });
+        new Chart(document.getElementById('serviceChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(serviceMap),
+                datasets: [{
+                    label: 'Incidents',
+                    data: Object.values(serviceMap),
+                    backgroundColor: '#2563eb'
+                }]
+            }
+        });
+        new Chart(document.getElementById('workloadChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(workloadMap),
+                datasets: [{
+                    label: 'Active Load',
+                    data: Object.values(workloadMap),
+                    backgroundColor: '#0d9488'
+                }]
+            },
+            options: { indexAxis: 'y' }
+        });
+    }
+</script>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -440,19 +440,26 @@ public class IncidentService {
     /** Returns incidents reported by the given employee paginated. */
     @Transactional(readOnly = true)
     public Page<Incident> findByReporter(String userCode, Pageable pageable) {
-        return incidentRepository.findByReporterUserCodeIgnoreCaseOrderByCreatedAtDesc(userCode, pageable);
+        Page<Incident> page = incidentRepository.findByReporterUserCodeIgnoreCaseOrderByCreatedAtDesc(userCode, pageable);
+        page.getContent().forEach(i -> i.getRelatedIncidentIds().size());
+        return page;
     }
 
     /** Returns incidents assigned to the given technician paginated. */
     @Transactional(readOnly = true)
     public Page<Incident> findByTechnician(String userCode, Pageable pageable) {
-        return incidentRepository.findByAssignedTechnicianUserCodeIgnoreCaseOrderByCreatedAtDesc(userCode, pageable);
+        Page<Incident> page = incidentRepository
+                .findByAssignedTechnicianUserCodeIgnoreCaseOrderByCreatedAtDesc(userCode, pageable);
+        page.getContent().forEach(i -> i.getRelatedIncidentIds().size());
+        return page;
     }
 
     /** Executes dynamic combinable JPA Specification search with pagination. */
     @Transactional(readOnly = true)
     public Page<Incident> search(IncidentSearchCriteria criteria, Pageable pageable) {
-        return incidentRepository.findAll(IncidentSpecifications.withCriteria(criteria), pageable);
+        Page<Incident> page = incidentRepository.findAll(IncidentSpecifications.withCriteria(criteria), pageable);
+        page.getContent().forEach(i -> i.getRelatedIncidentIds().size());
+        return page;
     }
 
     /** Returns unassigned CLASSIFIED incidents ordered by priority rank and creation time via PriorityQueue. */
