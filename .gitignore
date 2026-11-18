@@ -4,7 +4,12 @@ target/
 *.jar
 *.war
 *.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
 hs_err_pid*
+replay_pid*
 
 # Local runtime DB and logs
 data/
