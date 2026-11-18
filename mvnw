@@ -6,7 +6,7 @@ WRAPPER_JAR="$BASE_DIR/.mvn/wrapper/maven-wrapper.jar"
 WRAPPER_URL="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.3.2/maven-wrapper-3.3.2.jar"
 
 if [ -f "$WRAPPER_JAR" ]; then
-  exec java -Dmaven.multiModuleProjectDirectory="$BASE_DIR" -jar "$WRAPPER_JAR" "$@"
+  exec java -Dmaven.multiModuleProjectDirectory="$BASE_DIR" -classpath "$WRAPPER_JAR" org.apache.maven.wrapper.MavenWrapperMain "$@"
 elif command -v mvn >/dev/null 2>&1; then
   exec mvn "$@"
 else
@@ -19,5 +19,5 @@ else
     echo "Neither mvn nor curl/wget is available to run Maven Wrapper." >&2
     exit 1
   fi
-  exec java -Dmaven.multiModuleProjectDirectory="$BASE_DIR" -jar "$WRAPPER_JAR" "$@"
+  exec java -Dmaven.multiModuleProjectDirectory="$BASE_DIR" -classpath "$WRAPPER_JAR" org.apache.maven.wrapper.MavenWrapperMain "$@"
 fi

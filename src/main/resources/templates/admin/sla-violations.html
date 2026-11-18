@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('SLA Violations')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <h2>Recorded SLA Violations</h2>
+    <table>
+        <thead>
+        <tr><th>Incident</th><th>Service</th><th>Priority</th><th>Violation Type</th><th>Deadline</th><th>Detected At</th><th>Technician</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="v : ${violations.content}">
+            <td><a th:href="@{/incidents/{id}(id=${v.incidentId})}" th:text="${v.incidentId}">INC1001</a></td>
+            <td th:text="${v.serviceName}">Payment</td>
+            <td><span class="badge" th:classappend="${'badge-' + v.priority.name()}" th:text="${v.priority.displayName}">P1</span></td>
+            <td><span class="badge badge-BREACHED" th:text="${v.type}">RESPONSE</span></td>
+            <td th:text="${#temporals.format(v.deadline, 'yyyy-MM-dd HH:mm:ss')}">Deadline</td>
+            <td th:text="${#temporals.format(v.detectedAt, 'yyyy-MM-dd HH:mm:ss')}">Detected</td>
+            <td th:text="${v.assignedTechnicianCode ?: 'Unassigned'}">T101</td>
+        </tr>
+        <tr th:if="${violations.isEmpty()}">
+            <td colspan="7">No SLA violations recorded.</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

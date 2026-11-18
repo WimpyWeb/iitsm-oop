@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Report Incident')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide" style="max-width:820px;">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <div th:if="${duplicateIncidentId}" class="flash flash-warn">
+        Existing matching incident: <a th:href="@{/incidents/{id}(id=${duplicateIncidentId})}"
+                                       th:text="${duplicateIncidentId}">INC1001</a>
+    </div>
+
+    <article>
+        <h2>Report New IT Incident</h2>
+        <form th:action="@{/employee/incidents}" th:object="${form}" method="post">
+            <div class="grid">
+                <label>Affected Service
+                    <select id="serviceId" th:field="*{serviceId}" required
+                            hx-get="/incidents/suggest"
+                            hx-trigger="change"
+                            hx-include="[name='serviceId'], [name='description']"
+                            hx-target="#live-suggestions">
+                        <option value="">-- Select Service --</option>
+                        <option th:each="svc : ${services}"
+                                th:value="${svc.id}"
+                                th:text="${svc.name + ' (Criticality ' + svc.businessCriticality + '/5)'}">Service</option>
+                    </select>
+                </label>
+
+                <label>Category (optional — AI suggests if blank)
+                    <select th:field="*{categoryId}">
+                        <option value="">Auto-detect from description</option>
+                        <option th:each="cat : ${categories}"
+                                th:value="${cat.id}"
+                                th:text="${cat.name}">Category</option>
+                    </select>
+                </label>
+            </div>
+
+            <label>Incident Description
+                <textarea id="description" th:field="*{description}" rows="4" required
+                          placeholder="Describe the issue clearly (e.g., The payment application is unavailable and users are unable to complete transactions.)"
+                          hx-get="/incidents/suggest"
+                          hx-trigger="keyup changed delay:400ms"
+                          hx-include="[name='serviceId'], [name='description']"
+                          hx-target="#live-suggestions"></textarea>
+                <small style="color:#dc2626;" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></small>
+            </label>
+
+            <div id="live-suggestions"></div>
+
+            <div class="grid">
+                <label>Impact (1=Low .. 5=Critical)
+                    <input type="number" th:field="*{impact}" min="1" max="5" required/>
+                </label>
+                <label>Urgency (1=Low .. 5=Critical)
+                    <input type="number" th:field="*{urgency}" min="1" max="5" required/>
+                </label>
+                <label>Affected Users Count
+                    <input type="number" th:field="*{affectedUsersCount}" min="0" required/>
+                </label>
+            </div>
+
+            <button type="submit">Submit Incident</button>
+        </form>
+    </article>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

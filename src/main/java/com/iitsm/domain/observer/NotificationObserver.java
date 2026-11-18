@@ -97,9 +97,9 @@ public class NotificationObserver implements IncidentObserver {
                 addAdmins(recipients, event.extraRecipientCodes());
             }
             case CLASSIFIED -> {
-                // Notify admins when incident enters unassigned queue without an assignee.
-                if (techCode == null) {
-                    addAdmins(recipients, event.extraRecipientCodes());
+                // Notify admins only when explicitly targeted (e.g. unassigned queue alert).
+                if (techCode == null && event.extraRecipientCodes() != null && !event.extraRecipientCodes().isEmpty()) {
+                    addExtras(recipients, event.extraRecipientCodes());
                 }
             }
             case ASSIGNED, PRIORITY_CHANGED, CLOSED -> {

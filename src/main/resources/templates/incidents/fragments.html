@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="suggestions">
+    <div th:if="${suggestedCategory != null}" class="flash flash-success" style="margin-top:0.4rem;">
+        AI Suggested Category: <strong th:text="${suggestedCategory}">Application</strong>
+    </div>
+    <div th:if="${relatedCandidates != null and !#lists.isEmpty(relatedCandidates)}" class="flash flash-warn">
+        <strong>Possible Related Incidents (last 24h on this service):</strong>
+        <ul style="margin:0.3rem 0 0 1rem;">
+            <li th:each="rel : ${relatedCandidates}">
+                <span th:text="${rel.id}">INC1001</span> —
+                <span th:text="${#strings.abbreviate(rel.description, 80)}">Desc</span>
+                (<span th:text="${rel.status}">ASSIGNED</span>)
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

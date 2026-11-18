@@ -28,20 +28,20 @@ public class SlaInfo {
     @Column(name = "sla_resolution_met")
     private Boolean resolutionMet;
 
-    @Column(name = "sla_response_warned", nullable = false)
+    @Column(name = "sla_response_warned")
     private boolean responseApproachingWarned = false;
 
-    @Column(name = "sla_resolution_warned", nullable = false)
+    @Column(name = "sla_resolution_warned")
     private boolean resolutionApproachingWarned = false;
 
-    @Column(name = "sla_response_breach_recorded", nullable = false)
+    @Column(name = "sla_response_breach_recorded")
     private boolean responseBreachRecorded = false;
 
-    @Column(name = "sla_resolution_breach_recorded", nullable = false)
+    @Column(name = "sla_resolution_breach_recorded")
     private boolean resolutionBreachRecorded = false;
 
-    /** Required by JPA. */
-    protected SlaInfo() {
+    /** Default constructor required by JPA and uninitialized Incident defaults. */
+    public SlaInfo() {
     }
 
     /** Constructs SLA tracking deadlines starting ON_TRACK. */

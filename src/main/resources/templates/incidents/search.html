@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Search Incidents')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <h2>Search &amp; Filter Incidents</h2>
+    <form th:action="@{/incidents/search}" method="get">
+        <div class="grid">
+            <label>Incident ID
+                <input type="text" name="incidentId" th:value="${criteria.incidentId()}" placeholder="INC1001"/>
+            </label>
+            <label>Free Text
+                <input type="text" name="freeText" th:value="${criteria.freeText()}" placeholder="payment, timeout..."/>
+            </label>
+            <label>Status
+                <select name="status">
+                    <option value="">All</option>
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
+                            th:selected="${s == criteria.status()}"></option>
+                </select>
+            </label>
+            <label>Priority
+                <select name="priority">
+                    <option value="">All</option>
+                    <option th:each="p : ${priorities}" th:value="${p}" th:text="${p.displayName}"
+                            th:selected="${p == criteria.priority()}"></option>
+                </select>
+            </label>
+        </div>
+        <div class="grid">
+            <label>Service
+                <select name="serviceId">
+                    <option value="">All</option>
+                    <option th:each="svc : ${services}" th:value="${svc.id}" th:text="${svc.name}"
+                            th:selected="${svc.id == criteria.serviceId()}"></option>
+                </select>
+            </label>
+            <label>Category
+                <select name="categoryId">
+                    <option value="">All</option>
+                    <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
+                            th:selected="${cat.id == criteria.categoryId()}"></option>
+                </select>
+            </label>
+            <label>SLA Status
+                <select name="slaStatus">
+                    <option value="">All</option>
+                    <option th:each="sl : ${slaStatuses}" th:value="${sl}" th:text="${sl}"
+                            th:selected="${sl == criteria.slaStatus()}"></option>
+                </select>
+            </label>
+            <label th:if="${currentUserRole == 'ADMIN'}">Technician
+                <select name="technicianCode">
+                    <option value="">All</option>
+                    <option th:each="t : ${technicians}" th:value="${t.userCode}"
+                            th:text="${t.userCode + ' - ' + t.fullName}"
+                            th:selected="${t.userCode == criteria.technicianCode()}"></option>
+                </select>
+            </label>
+        </div>
+        <div class="grid">
+            <label>From Date <input type="date" name="fromDate" th:value="${criteria.fromDate()}"/></label>
+            <label>To Date <input type="date" name="toDate" th:value="${criteria.toDate()}"/></label>
+            <div style="display:flex;align-items:end;gap:0.5rem;">
+                <button type="submit">Apply Filters</button>
+                <a role="button" class="secondary" th:href="@{/incidents/search}">Reset</a>
+            </div>
+        </div>
+    </form>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th><th>Reporter</th><th>Service</th><th>Category</th>
+            <th>Priority</th><th>Status</th><th>SLA</th><th>Technician</th><th>Created</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="inc : ${results.content}">
+            <td><a th:href="@{/incidents/{id}(id=${inc.id})}" th:text="${inc.id}">INC1001</a></td>
+            <td th:text="${inc.reporter.userCode}">E101</td>
+            <td th:text="${inc.affectedService.name}">Service</td>
+            <td th:text="${inc.category != null ? inc.category.name : '-'}">Cat</td>
+            <td><span th:if="${inc.priority != null}" class="badge" th:classappend="${'badge-' + inc.priority.name()}"
+                      th:text="${inc.priority.displayName}">P1</span></td>
+            <td><span class="badge" th:text="${inc.status}">NEW</span></td>
+            <td><span th:if="${inc.sla != null and inc.sla.slaStatus != null}" class="badge"
+                      th:classappend="${'badge-' + inc.sla.slaStatus.name()}" th:text="${inc.sla.slaStatus}">ON_TRACK</span></td>
+            <td th:text="${inc.assignedTechnician != null ? inc.assignedTechnician.userCode : 'Unassigned'}">T101</td>
+            <td th:text="${#temporals.format(inc.createdAt, 'yyyy-MM-dd HH:mm')}">Time</td>
+        </tr>
+        <tr th:if="${results.isEmpty()}">
+            <td colspan="9">No matching incidents found.</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

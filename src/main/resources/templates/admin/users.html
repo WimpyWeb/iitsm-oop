@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Manage Users')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <h2>User &amp; Technician Management</h2>
+
+    <article>
+        <h3>Create Account</h3>
+        <form th:action="@{/admin/users}" method="post">
+            <div class="grid">
+                <label>Account Type
+                    <select name="accountType" required>
+                        <option value="TECHNICIAN">Technician</option>
+                        <option value="TEAM_LEAD">Team Lead</option>
+                        <option value="ADMIN">Administrator</option>
+                        <option value="EMPLOYEE">Employee</option>
+                    </select>
+                </label>
+                <label>Code (optional, e.g. T105) <input type="text" name="userCode"/></label>
+                <label>Username <input type="text" name="username" required/></label>
+                <label>Email <input type="email" name="email" required/></label>
+            </div>
+            <div class="grid">
+                <label>Full Name <input type="text" name="fullName" required/></label>
+                <label>Password (min 8) <input type="password" name="password" minlength="8" required/></label>
+                <label>Phone <input type="text" name="phone"/></label>
+                <label>Admin Level
+                    <select name="adminLevel">
+                        <option th:each="lvl : ${adminLevels}" th:value="${lvl}" th:text="${lvl}"></option>
+                    </select>
+                </label>
+            </div>
+            <div class="grid">
+                <label>Skills (CSV, for Technicians) <input type="text" name="skillsCsv" placeholder="payment, sql, java"/></label>
+                <label>Experience Years <input type="number" name="experienceYears" value="2" min="0"/></label>
+                <label>Max Load <input type="number" name="maxLoad" value="5" min="1"/></label>
+                <label>Department (Employees) <input type="text" name="department" value="IT"/></label>
+            </div>
+            <input type="hidden" name="jobTitle" value="Staff"/>
+            <button type="submit">Create User</button>
+        </form>
+    </article>
+
+    <table>
+        <thead>
+        <tr><th>Code</th><th>Identity</th><th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${users.content}">
+            <td th:text="${u.userCode}">T101</td>
+            <td th:text="${u.displayIdentity}">Technician T101</td>
+            <td th:text="${u.username}">tech1</td>
+            <td th:text="${u.fullName}">Name</td>
+            <td th:text="${u.email}">email</td>
+            <td><span class="badge" th:text="${u.role}">TECHNICIAN</span></td>
+            <td><span class="badge" th:classappend="${u.active ? 'badge-AVAILABLE' : 'badge-UNAVAILABLE'}"
+                      th:text="${u.active ? 'ACTIVE' : 'DISABLED'}">ACTIVE</span></td>
+            <td>
+                <form th:action="@{/admin/users/{id}/toggle-active(id=${u.id})}" method="post" class="inline-form">
+                    <input type="hidden" name="active" th:value="${!u.active}"/>
+                    <button type="submit" class="btn-sm secondary"
+                            th:text="${u.active ? 'Disable' : 'Enable'}">Disable</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

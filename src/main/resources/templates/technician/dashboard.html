@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Technician Queue')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <div class="grid-cards" th:if="${technicianProfile != null}">
+        <div class="stat-card">
+            <h4>Workload</h4>
+            <div class="stat-val" th:text="${technicianProfile.currentLoad + ' / ' + technicianProfile.maxLoad}">0 / 5</div>
+        </div>
+        <div class="stat-card">
+            <h4>Availability</h4>
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.35rem;">
+                <span class="badge"
+                      th:classappend="${technicianProfile.available ? 'badge-AVAILABLE' : 'badge-UNAVAILABLE'}"
+                      th:text="${technicianProfile.available ? 'AVAILABLE' : 'UNAVAILABLE'}">AVAILABLE</span>
+                <form th:action="@{/technician/availability}" method="post" class="inline-form">
+                    <button type="submit" class="btn-sm secondary">Toggle</button>
+                </form>
+            </div>
+        </div>
+        <div class="stat-card">
+            <h4>Skills</h4>
+            <small>
+                <span th:each="sk, st : ${technicianProfile.skills}"
+                      th:text="${sk + (st.last ? '' : ', ')}">skill</span>
+            </small>
+        </div>
+    </div>
+
+    <h3>My Assigned Incidents</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Service</th>
+            <th>Description</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>SLA</th>
+            <th>Response Due</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="inc : ${assignedIncidents.content}">
+            <td><a th:href="@{/incidents/{id}(id=${inc.id})}" th:text="${inc.id}">INC1001</a></td>
+            <td th:text="${inc.affectedService.name}">Service</td>
+            <td th:text="${#strings.abbreviate(inc.description, 65)}">Desc</td>
+            <td>
+                <span th:if="${inc.priority != null}"
+                      th:classappend="${'badge-' + inc.priority.name()}"
+                      class="badge"
+                      th:text="${inc.priority.displayName}">P1</span>
+            </td>
+            <td><span class="badge" th:text="${inc.status}">ASSIGNED</span></td>
+            <td>
+                <span th:if="${inc.sla != null and inc.sla.slaStatus != null}"
+                      th:classappend="${'badge-' + inc.sla.slaStatus.name()}"
+                      class="badge"
+                      th:text="${inc.sla.slaStatus}">ON_TRACK</span>
+            </td>
+            <td th:text="${inc.sla != null and inc.sla.responseDue != null ? #temporals.format(inc.sla.responseDue, 'HH:mm:ss') : '-'}">-</td>
+            <td><a th:href="@{/incidents/{id}(id=${inc.id})}">Work Incident</a></td>
+        </tr>
+        <tr th:if="${assignedIncidents.isEmpty()}">
+            <td colspan="8">No incidents currently assigned to you.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h3 style="margin-top:2rem;">Recommended Unassigned Incidents</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Service</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Description</th>
+            <th>Claim</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="inc : ${recommendedIncidents}">
+            <td th:text="${inc.id}">INC1002</td>
+            <td th:text="${inc.affectedService.name}">Service</td>
+            <td th:text="${inc.category != null ? inc.category.name : '-'}">Cat</td>
+            <td>
+                <span th:if="${inc.priority != null}"
+                      th:classappend="${'badge-' + inc.priority.name()}"
+                      class="badge"
+                      th:text="${inc.priority.displayName}">P2</span>
+            </td>
+            <td th:text="${#strings.abbreviate(inc.description, 70)}">Desc</td>
+            <td>
+                <form th:action="@{/technician/incidents/{id}/claim(id=${inc.id})}" method="post" class="inline-form">
+                    <button type="submit" class="btn-sm">Claim</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(recommendedIncidents)}">
+            <td colspan="6">Unassigned queue is clear.</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

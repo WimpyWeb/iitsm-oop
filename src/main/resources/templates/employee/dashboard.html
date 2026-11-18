@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Incidents')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h2>My Reported Incidents</h2>
+        <a role="button" th:href="@{/employee/incidents/new}">+ Report New Incident</a>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Service</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>SLA</th>
+            <th>Assigned To</th>
+            <th>Created</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="inc : ${incidents.content}">
+            <td><a th:href="@{/incidents/{id}(id=${inc.id})}" th:text="${inc.id}">INC1001</a></td>
+            <td th:text="${inc.affectedService.name}">Service</td>
+            <td th:text="${inc.category != null ? inc.category.name : 'Pending'}">Category</td>
+            <td th:text="${#strings.abbreviate(inc.description, 70)}">Desc</td>
+            <td>
+                <span th:if="${inc.priority != null}"
+                      th:classappend="${'badge-' + inc.priority.name()}"
+                      class="badge"
+                      th:text="${inc.priority.displayName}">P1 Critical</span>
+            </td>
+            <td><span class="badge" th:text="${inc.status}">ASSIGNED</span></td>
+            <td>
+                <span th:if="${inc.sla != null and inc.sla.slaStatus != null}"
+                      th:classappend="${'badge-' + inc.sla.slaStatus.name()}"
+                      class="badge"
+                      th:text="${inc.sla.slaStatus}">ON_TRACK</span>
+            </td>
+            <td th:text="${inc.assignedTechnician != null ? inc.assignedTechnician.displayIdentity : 'Unassigned Queue'}">Tech</td>
+            <td th:text="${#temporals.format(inc.createdAt, 'yyyy-MM-dd HH:mm')}">Time</td>
+        </tr>
+        <tr th:if="${incidents.isEmpty()}">
+            <td colspan="9">No incidents submitted yet. Click "+ Report New Incident" to submit one.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${incidents.totalPages > 1}" style="display:flex;gap:0.5rem;">
+        <a th:if="${incidents.hasPrevious()}" th:href="@{/employee/dashboard(page=${incidents.number - 1})}">Previous</a>
+        <span>Page <span th:text="${incidents.number + 1}">1</span> of <span th:text="${incidents.totalPages}">1</span></span>
+        <a th:if="${incidents.hasNext()}" th:href="@{/employee/dashboard(page=${incidents.number + 1})}">Next</a>
+    </div>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Register Employee')}"></head>
+<body>
+<main class="container" style="max-width:560px;margin-top:2rem;">
+    <article>
+        <h2>Employee Self-Registration</h2>
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+        <form th:action="@{/register}" th:object="${form}" method="post">
+            <label>Full Name
+                <input type="text" th:field="*{fullName}" required/>
+                <small style="color:#dc2626;" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></small>
+            </label>
+            <label>Username
+                <input type="text" th:field="*{username}" required/>
+                <small style="color:#dc2626;" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></small>
+            </label>
+            <label>Email
+                <input type="email" th:field="*{email}" required/>
+                <small style="color:#dc2626;" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+            </label>
+            <label>Password (min 8 chars)
+                <input type="password" th:field="*{password}" minlength="8" required/>
+                <small style="color:#dc2626;" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
+            </label>
+            <div class="grid">
+                <label>Department
+                    <input type="text" th:field="*{department}"/>
+                </label>
+                <label>Job Title
+                    <input type="text" th:field="*{jobTitle}"/>
+                </label>
+            </div>
+            <label>Phone
+                <input type="text" th:field="*{phone}"/>
+            </label>
+            <button type="submit">Create Employee Account</button>
+        </form>
+        <p><a th:href="@{/login}">Back to Sign In</a></p>
+    </article>
+</main>
+</body>
+</html>

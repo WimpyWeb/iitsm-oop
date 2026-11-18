@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Audit Log')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <h2>Immutable Global Audit Log</h2>
+    <form th:action="@{/admin/audit}" method="get">
+        <div class="grid">
+            <input type="text" name="incidentId" th:value="${incidentId}" placeholder="Incident ID (INC1001)"/>
+            <input type="text" name="actor" th:value="${actor}" placeholder="Actor (E101, SYSTEM)"/>
+            <input type="text" name="action" th:value="${action}" placeholder="Action (CREATED, ASSIGNED, ESCALATED)"/>
+            <button type="submit">Filter</button>
+        </div>
+    </form>
+
+    <table>
+        <thead>
+        <tr><th>Timestamp</th><th>Incident</th><th>Actor</th><th>Action</th><th>Transition</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="e : ${entries.content}">
+            <td th:text="${#temporals.format(e.timestamp, 'yyyy-MM-dd HH:mm:ss')}">Time</td>
+            <td><a th:if="${e.incidentId != null}" th:href="@{/incidents/{id}(id=${e.incidentId})}" th:text="${e.incidentId}">INC1001</a></td>
+            <td th:text="${e.actor}">Actor</td>
+            <td><span class="badge" th:text="${e.action}">CREATED</span></td>
+            <td th:text="${(e.prevState != null ? e.prevState : '-') + ' → ' + (e.newState != null ? e.newState : '-')}">-</td>
+            <td th:text="${e.description}">Desc</td>
+        </tr>
+        <tr th:if="${entries.isEmpty()}">
+            <td colspan="6">No audit entries matched.</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

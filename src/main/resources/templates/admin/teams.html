@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Manage Teams')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <h2>Support Teams</h2>
+
+    <article>
+        <h3>Create Support Team</h3>
+        <form th:action="@{/admin/teams}" method="post">
+            <div class="grid">
+                <label>Team Name <input type="text" name="name" required/></label>
+                <label>Specialty Category <input type="text" name="specialtyCategory" placeholder="Application"/></label>
+                <label>Team Lead
+                    <select name="teamLeadCode">
+                        <option value="">-- Optional --</option>
+                        <option th:each="tl : ${teamLeads}" th:value="${tl.userCode}"
+                                th:text="${tl.userCode + ' - ' + tl.fullName}">T201</option>
+                    </select>
+                </label>
+            </div>
+            <button type="submit">Create Team</button>
+        </form>
+    </article>
+
+    <table>
+        <thead>
+        <tr><th>Team</th><th>Specialty</th><th>Team Lead</th><th>Members</th><th>Add Technician</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="team : ${teams}">
+            <td th:text="${team.name}">Core</td>
+            <td th:text="${team.specialtyCategory}">Application</td>
+            <td th:text="${team.teamLead != null ? team.teamLead.displayIdentity + ' (' + team.teamLead.fullName + ')' : '-'}">Lead</td>
+            <td>
+                <span th:each="m, st : ${team.members}">
+                    <span th:text="${m.userCode + ' (' + m.fullName + ')'}">T101</span><span th:if="${!st.last}">, </span>
+                </span>
+            </td>
+            <td>
+                <form th:action="@{/admin/teams/{id}/assign(id=${team.id})}" method="post" class="inline-form">
+                    <select name="technicianCode" style="width:auto;display:inline-block;padding:0.25rem;">
+                        <option th:each="t : ${technicians}" th:value="${t.userCode}"
+                                th:text="${t.userCode + ' - ' + t.fullName}">T101</option>
+                    </select>
+                    <button type="submit" class="btn-sm">Add</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

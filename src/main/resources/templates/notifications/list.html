@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Notifications')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2>Notifications History</h2>
+        <form th:action="@{/notifications/read-all}" method="post">
+            <button type="submit" class="btn-sm">Mark All In-App Read</button>
+        </form>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <th>Time</th>
+            <th>Channel</th>
+            <th>Incident</th>
+            <th>Subject</th>
+            <th>Message</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="n : ${notifications.content}">
+            <td th:text="${#temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm:ss')}">Time</td>
+            <td><span class="badge" th:text="${n.channel}">IN_APP</span></td>
+            <td>
+                <a th:if="${n.incidentId != null}" th:href="@{/incidents/{id}(id=${n.incidentId})}"
+                   th:text="${n.incidentId}">INC1001</a>
+            </td>
+            <td th:text="${n.subject}">Subject</td>
+            <td th:text="${n.message}">Message</td>
+            <td>
+                <span th:if="${n.readFlag}" class="badge badge-ON_TRACK">READ</span>
+                <form th:if="${!n.readFlag}" th:action="@{/notifications/{id}/read(id=${n.id})}" method="post" class="inline-form">
+                    <button type="submit" class="btn-sm">Mark Read</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${notifications.isEmpty()}">
+            <td colspan="6">No notifications found.</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

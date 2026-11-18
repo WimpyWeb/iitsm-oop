@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Incident ' + ${incident.id})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.75rem;">
+        <div>
+            <h2 style="margin-bottom:0.25rem;" th:text="${incident.id + ' — ' + incident.affectedService.name}">INC1001</h2>
+            <span th:if="${incident.priority != null}"
+                  class="badge" th:classappend="${'badge-' + incident.priority.name()}"
+                  th:text="${incident.priority.displayName}">P1 Critical</span>
+            <span class="badge" th:classappend="${'badge-' + incident.status.name()}"
+                  th:text="${incident.status}">ASSIGNED</span>
+            <span th:if="${incident.sla != null and incident.sla.slaStatus != null}"
+                  class="badge" th:classappend="${'badge-' + incident.sla.slaStatus.name()}"
+                  th:text="${'SLA: ' + incident.sla.slaStatus}">SLA: ON_TRACK</span>
+            <span th:if="${incident.escalationLevel > 0}" class="badge badge-P1"
+                  th:text="${'Escalated Level ' + incident.escalationLevel}">Escalated</span>
+        </div>
+        <a th:href="@{/dashboard}">&larr; Back to Dashboard</a>
+    </div>
+
+    <div th:if="${incident.outageFlagged}" class="flash flash-error" style="margin-top:0.75rem;">
+        <strong>Possible Service Outage:</strong> Multiple open incidents reported on
+        <span th:text="${incident.affectedService.name}">Service</span> within the last hour.
+    </div>
+    <div th:if="${incident.rootCauseSuggestion != null}" class="flash flash-warn" style="margin-top:0.5rem;">
+        <strong>Dependency Correlation:</strong> <span th:text="${incident.rootCauseSuggestion}">Root cause</span>
+    </div>
+    <div th:if="${!#sets.isEmpty(incident.relatedIncidentIds)}" class="flash flash-warn" style="margin-top:0.5rem;">
+        <strong>Related Incidents:</strong>
+        <span th:each="relId, stat : ${incident.relatedIncidentIds}">
+            <a th:if="${currentUserRole != 'EMPLOYEE'}" th:href="@{/incidents/{id}(id=${relId})}" th:text="${relId}">INC1001</a>
+            <span th:if="${currentUserRole == 'EMPLOYEE'}" th:text="${relId}">INC1001</span>
+            <span th:if="${!stat.last}">, </span>
+        </span>
+    </div>
+
+    <div class="grid" style="margin-top:1rem;">
+        <article>
+            <h3>Details</h3>
+            <p><strong>Reporter:</strong> <span th:text="${incident.reporter.displayIdentity + ' (' + incident.reporter.fullName + ')'}">E101</span></p>
+            <p><strong>Category:</strong> <span th:text="${incident.category != null ? incident.category.name : '-'}">Cat</span></p>
+            <p><strong>Assigned Technician:</strong>
+                <span th:text="${incident.assignedTechnician != null ? incident.assignedTechnician.displayIdentity + ' (' + incident.assignedTechnician.fullName + ')' : 'Unassigned Queue'}">T101</span>
+            </p>
+            <p><strong>Impact / Urgency / Affected Users:</strong>
+                <span th:text="${incident.impact + ' / ' + incident.urgency + ' / ' + incident.affectedUsersCount + ' users (Score: ' + incident.priorityScore + ')'}">5/5/100</span>
+            </p>
+            <p><strong>Description:</strong></p>
+            <p th:text="${incident.description}">Description</p>
+        </article>
+
+        <article>
+            <h3>SLA &amp; Timestamps</h3>
+            <p><strong>Created:</strong> <span th:text="${#temporals.format(incident.createdAt, 'yyyy-MM-dd HH:mm:ss')}">-</span></p>
+            <p><strong>Response Due:</strong>
+                <span th:text="${incident.sla != null and incident.sla.responseDue != null ? #temporals.format(incident.sla.responseDue, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</span>
+            </p>
+            <p><strong>Responded At:</strong>
+                <span th:text="${incident.respondedAt != null ? #temporals.format(incident.respondedAt, 'yyyy-MM-dd HH:mm:ss') : 'Pending'}">-</span>
+            </p>
+            <p><strong>Resolution Due:</strong>
+                <span th:text="${incident.sla != null and incident.sla.resolutionDue != null ? #temporals.format(incident.sla.resolutionDue, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</span>
+            </p>
+            <p><strong>Resolved At:</strong>
+                <span th:text="${incident.resolvedAt != null ? #temporals.format(incident.resolvedAt, 'yyyy-MM-dd HH:mm:ss') : 'Pending'}">-</span>
+            </p>
+            <p th:if="${slaRisk != null}">
+                <strong>Projected Breach Risk:</strong>
+                <span th:text="${slaRisk.projectedBreach() ? 'YES (' + #numbers.formatDecimal(slaRisk.maxElapsedPercent(), 1, 0) + '% elapsed)' : 'No (' + #numbers.formatDecimal(slaRisk.maxElapsedPercent(), 1, 0) + '% elapsed)'}">No</span>
+            </p>
+            <div th:if="${!#lists.isEmpty(slaViolations)}" class="flash flash-error">
+                <strong>Recorded Violations:</strong>
+                <div th:each="v : ${slaViolations}" th:text="${v.type + ' missed deadline ' + #temporals.format(v.deadline, 'HH:mm:ss')}"></div>
+            </div>
+        </article>
+    </div>
+
+    <!-- Resolution / Closure / Feedback Summaries -->
+    <article th:if="${incident.resolution != null}">
+        <h3>Resolution</h3>
+        <p><strong>Summary:</strong> <span th:text="${incident.resolution.summary}">Summary</span></p>
+        <p><strong>Steps:</strong> <span th:text="${incident.resolution.steps}">Steps</span></p>
+        <p><small>Resolved by <span th:text="${incident.resolution.resolvedByName + ' (' + incident.resolution.resolvedByCode + ')'}">Tech</span></small></p>
+        <div th:if="${incident.closure != null}">
+            <hr/>
+            <p><strong>Closed By:</strong> <span th:text="${incident.closure.closedByCode}">T101</span> |
+                <strong>Notes:</strong> <span th:text="${incident.closure.notes}">Notes</span></p>
+        </div>
+        <div th:if="${incident.feedback != null}">
+            <hr/>
+            <p><strong>Reporter Feedback:</strong> <span th:text="${incident.feedback.rating + '/5'}">5/5</span> —
+                <span th:text="${incident.feedback.comment}">Great</span></p>
+        </div>
+    </article>
+
+    <!-- Employee / Reporter Controls -->
+    <article th:if="${(currentUserCode == incident.reporter.userCode or currentUserRole == 'ADMIN') and incident.status.name() == 'PENDING_INFO'}">
+        <h3>Information Requested</h3>
+        <div th:each="req : ${incident.infoRequests}" th:if="${req.status.name() == 'PENDING'}">
+            <p><strong>Question from <span th:text="${req.requestedBy}">Tech</span>:</strong> <span th:text="${req.question}">Q</span></p>
+            <form th:action="@{/employee/incidents/{id}/answer-info(id=${incident.id})}" method="post">
+                <input type="hidden" name="infoRequestId" th:value="${req.id}"/>
+                <textarea name="answer" rows="2" required placeholder="Provide clarification..."></textarea>
+                <button type="submit" class="btn-sm">Submit Clarification</button>
+            </form>
+        </div>
+    </article>
+
+    <article th:if="${(currentUserCode == incident.reporter.userCode or currentUserRole == 'ADMIN') and incident.status.name() == 'RESOLVED'}">
+        <h3>Verify Resolution or Reopen</h3>
+        <div class="grid">
+            <form th:action="@{/employee/incidents/{id}/verify(id=${incident.id})}" method="post">
+                <button type="submit">Confirm Fix (Verify)</button>
+            </form>
+            <form th:action="@{/employee/incidents/{id}/reopen(id=${incident.id})}" method="post">
+                <input type="text" name="reason" required placeholder="Reason if issue persists..."/>
+                <button type="submit" class="secondary">Reject &amp; Reopen</button>
+            </form>
+        </div>
+    </article>
+
+    <article th:if="${currentUserCode == incident.reporter.userCode and (incident.status.name() == 'RESOLVED' or incident.status.name() == 'VERIFIED' or incident.status.name() == 'CLOSED') and incident.feedback == null}">
+        <h3>Submit Feedback</h3>
+        <form th:action="@{/employee/incidents/{id}/feedback(id=${incident.id})}" method="post">
+            <div class="grid">
+                <label>Rating (1–5)
+                    <input type="number" name="rating" min="1" max="5" value="5" required/>
+                </label>
+                <label>Comment
+                    <input type="text" name="comment" placeholder="Optional feedback"/>
+                </label>
+            </div>
+            <button type="submit" class="btn-sm">Submit Feedback</button>
+        </form>
+    </article>
+
+    <article th:if="${(currentUserCode == incident.reporter.userCode or currentUserRole == 'ADMIN') and incident.status.beforeResolved}">
+        <details>
+            <summary><strong>Edit Incident Details (Allowed before Resolved)</strong></summary>
+            <form th:action="@{/employee/incidents/{id}/edit(id=${incident.id})}" th:object="${editForm}" method="post" style="margin-top:0.75rem;">
+                <label>Description
+                    <textarea th:field="*{description}" rows="3" required></textarea>
+                </label>
+                <div class="grid">
+                    <label>Impact (1–5)<input type="number" th:field="*{impact}" min="1" max="5" required/></label>
+                    <label>Urgency (1–5)<input type="number" th:field="*{urgency}" min="1" max="5" required/></label>
+                    <label>Affected Users<input type="number" th:field="*{affectedUsersCount}" min="0" required/></label>
+                </div>
+                <button type="submit" class="btn-sm">Save &amp; Recalculate Priority</button>
+            </form>
+        </details>
+    </article>
+
+    <!-- Technician Actions -->
+    <article th:if="${currentUserRole == 'TECHNICIAN' or currentUserRole == 'ADMIN'}">
+        <h3>Technician &amp; Workflow Actions</h3>
+        <div th:if="${suggestedResolution != null}" class="flash flash-success">
+            <strong>Suggested Resolution:</strong> <span th:text="${suggestedResolution}">Suggestion</span>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin-bottom:1rem;">
+            <form th:if="${incident.status.name() == 'ASSIGNED'}"
+                  th:action="@{/technician/incidents/{id}/acknowledge(id=${incident.id})}" method="post" class="inline-form">
+                <button type="submit">Acknowledge Incident</button>
+            </form>
+            <form th:if="${incident.status.name() == 'ACKNOWLEDGED'}"
+                  th:action="@{/technician/incidents/{id}/start(id=${incident.id})}" method="post" class="inline-form">
+                <button type="submit">Start Investigation</button>
+            </form>
+        </div>
+
+        <div th:if="${incident.status.name() == 'IN_PROGRESS'}" class="grid">
+            <form th:action="@{/technician/incidents/{id}/resolve(id=${incident.id})}" th:object="${resolveForm}" method="post">
+                <h4>Resolve Incident</h4>
+                <label>Summary <input type="text" th:field="*{summary}" required/></label>
+                <label>Resolution Steps <textarea th:field="*{steps}" rows="3" required></textarea></label>
+                <button type="submit">Mark Resolved</button>
+            </form>
+            <form th:action="@{/technician/incidents/{id}/request-info(id=${incident.id})}" method="post">
+                <h4>Request Info from Reporter</h4>
+                <label>Question <textarea name="question" rows="3" required></textarea></label>
+                <button type="submit" class="secondary">Request Info</button>
+            </form>
+        </div>
+
+        <form th:if="${incident.status.name() == 'VERIFIED'}"
+              th:action="@{/technician/incidents/{id}/close(id=${incident.id})}" method="post" style="margin-top:0.75rem;">
+            <label>Closure Notes
+                <input type="text" name="closureNotes" placeholder="Confirmed stable and documented"/>
+            </label>
+            <button type="submit">Close Verified Incident</button>
+        </form>
+
+        <details th:if="${incident.status.name() == 'ASSIGNED' or incident.status.name() == 'ACKNOWLEDGED'}" style="margin-top:0.75rem;">
+            <summary>Decline Assignment</summary>
+            <form th:action="@{/technician/incidents/{id}/decline(id=${incident.id})}" method="post" style="margin-top:0.5rem;">
+                <input type="text" name="reason" required placeholder="Reason for declining"/>
+                <button type="submit" class="btn-sm secondary">Decline &amp; Auto-Reassign</button>
+            </form>
+        </details>
+
+        <details th:if="${incident.status.beforeResolved}" style="margin-top:0.75rem;">
+            <summary>Override Priority</summary>
+            <form th:action="@{${currentUserRole == 'ADMIN' ? '/admin/incidents/' + incident.id + '/priority' : '/technician/incidents/' + incident.id + '/priority'}}"
+                  method="post" style="margin-top:0.5rem;">
+                <div class="grid">
+                    <select name="priority">
+                        <option th:each="p : ${priorities}" th:value="${p}" th:text="${p.displayName}"
+                                th:selected="${p == incident.priority}">P1</option>
+                    </select>
+                    <input type="text" name="reason" placeholder="Override justification"/>
+                </div>
+                <button type="submit" class="btn-sm">Update Priority</button>
+            </form>
+        </details>
+    </article>
+
+    <!-- Admin Assign / Technician Recommendation Ranking -->
+    <article th:if="${currentUserRole == 'ADMIN' and incident.status.beforeResolved}">
+        <h3>Assign / Reassign Technician (Smart Recommendations)</h3>
+        <form th:action="@{/admin/incidents/{id}/assign(id=${incident.id})}" method="post" style="margin-bottom:1rem;">
+            <div class="grid">
+                <select name="technicianCode" required>
+                    <option th:each="t : ${technicians}" th:value="${t.userCode}"
+                            th:text="${t.displayIdentity + ' - ' + t.fullName + ' (' + t.currentLoad + '/' + t.maxLoad + ')'}">T101</option>
+                </select>
+                <button type="submit">Assign Technician</button>
+            </div>
+        </form>
+        <table th:if="${recommendations != null}">
+            <thead>
+            <tr><th>Technician</th><th>Score</th><th>Skills</th><th>Svc Exp</th><th>Load</th><th>Rationale</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="rec : ${recommendations}">
+                <td th:text="${rec.userCode() + ' (' + rec.fullName() + ')'}">T101</td>
+                <td><strong th:text="${rec.score()}">95.0</strong></td>
+                <td th:text="${rec.skillMatches()}">2</td>
+                <td th:text="${rec.serviceExperience()}">1</td>
+                <td th:text="${rec.currentLoad() + '/' + rec.maxLoad()}">1/5</td>
+                <td th:text="${rec.rationale()}">rationale</td>
+            </tr>
+            </tbody>
+        </table>
+    </article>
+
+    <!-- Investigation Notes & Info Requests -->
+    <article>
+        <h3>Investigation Notes &amp; Clarifications</h3>
+        <form th:if="${!incident.status.closed}"
+              th:action="@{${currentUserRole == 'EMPLOYEE' ? '/employee/incidents/' + incident.id + '/note' : '/technician/incidents/' + incident.id + '/note'}}"
+              method="post" style="margin-bottom:1rem;">
+            <div class="grid">
+                <input type="text" name="noteText" required placeholder="Add investigation or status note..."/>
+                <button type="submit" class="btn-sm">Add Note</button>
+            </div>
+        </form>
+        <div th:each="note : ${incident.investigationNotes}" class="timeline-item">
+            <strong th:text="${note.authorName + ' (' + note.authorCode + ')'}">Author</strong>
+            <small th:text="${#temporals.format(note.createdAt, 'yyyy-MM-dd HH:mm:ss')}">Time</small>
+            <div th:text="${note.text}">Note</div>
+        </div>
+        <div th:each="req : ${incident.infoRequests}" class="timeline-item" style="border-color:#d97706;">
+            <strong>Info Request (<span th:text="${req.status}">PENDING</span>)</strong>:
+            <span th:text="${req.question}">Q</span>
+            <div th:if="${req.answer != null}"><strong>Answer:</strong> <span th:text="${req.answer}">A</span></div>
+        </div>
+    </article>
+
+    <!-- Audit Timeline -->
+    <article>
+        <h3>Audit Timeline</h3>
+        <table>
+            <thead>
+            <tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Transition</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${timeline}">
+                <td th:text="${#temporals.format(entry.timestamp, 'yyyy-MM-dd HH:mm:ss')}">Time</td>
+                <td th:text="${entry.actor}">Actor</td>
+                <td><span class="badge" th:text="${entry.action}">CREATED</span></td>
+                <td th:text="${(entry.prevState != null ? entry.prevState : '-') + ' → ' + (entry.newState != null ? entry.newState : '-')}">NEW</td>
+                <td th:text="${entry.description}">Desc</td>
+            </tr>
+            </tbody>
+        </table>
+    </article>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

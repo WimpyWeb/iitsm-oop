@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin Console')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <h2>Administrator Operations Console</h2>
+
+    <div class="grid-cards">
+        <div class="stat-card">
+            <h4>Total Incidents</h4>
+            <div class="stat-val" th:text="${allIncidents.totalElements}">0</div>
+        </div>
+        <div class="stat-card">
+            <h4>Unassigned Queue</h4>
+            <div class="stat-val" th:text="${#lists.size(unassignedQueue)}">0</div>
+        </div>
+        <div class="stat-card">
+            <h4>Active Priority Strategy</h4>
+            <div class="stat-val" style="font-size:1.15rem;" th:text="${activePriorityStrategy}">WEIGHTED</div>
+        </div>
+        <div class="stat-card">
+            <h4>Active Assignment Strategy</h4>
+            <div class="stat-val" style="font-size:1.15rem;" th:text="${activeAssignmentStrategy}">SKILL_BASED</div>
+        </div>
+        <div class="stat-card">
+            <h4>SLA Violations</h4>
+            <div class="stat-val">
+                <a th:href="@{/admin/sla-violations}" th:text="${recentViolationsCount}">0</a>
+            </div>
+        </div>
+    </div>
+
+    <article>
+        <h3>Runtime Strategy Configuration</h3>
+        <form th:action="@{/admin/strategies}" method="post">
+            <div class="grid">
+                <label>Priority Strategy
+                    <select name="priorityStrategy">
+                        <option th:each="ps : ${priorityStrategies}" th:value="${ps}" th:text="${ps}"
+                                th:selected="${ps == activePriorityStrategy}">WEIGHTED</option>
+                    </select>
+                </label>
+                <label>Assignment Strategy
+                    <select name="assignmentStrategy">
+                        <option th:each="as : ${assignmentStrategies}" th:value="${as}" th:text="${as}"
+                                th:selected="${as == activeAssignmentStrategy}">SKILL_BASED</option>
+                    </select>
+                </label>
+                <label>Escalation Min Priority
+                    <select name="escalationMinPriority">
+                        <option th:each="p : ${priorities}" th:value="${p}" th:text="${p.displayName}"
+                                th:selected="${p == escalationMinPriority}">P1</option>
+                    </select>
+                </label>
+                <div style="display:flex;align-items:end;">
+                    <button type="submit">Apply Strategies</button>
+                </div>
+            </div>
+        </form>
+    </article>
+
+    <article th:if="${!#lists.isEmpty(unassignedQueue)}">
+        <h3>Unassigned Queue (Priority Ordered)</h3>
+        <table>
+            <thead>
+            <tr><th>ID</th><th>Service</th><th>Priority</th><th>Description</th><th>Manual Assign</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="inc : ${unassignedQueue}">
+                <td><a th:href="@{/incidents/{id}(id=${inc.id})}" th:text="${inc.id}">INC1001</a></td>
+                <td th:text="${inc.affectedService.name}">Service</td>
+                <td><span th:if="${inc.priority != null}" class="badge" th:classappend="${'badge-' + inc.priority.name()}"
+                          th:text="${inc.priority.displayName}">P1</span></td>
+                <td th:text="${#strings.abbreviate(inc.description, 65)}">Desc</td>
+                <td>
+                    <form th:action="@{/admin/incidents/{id}/assign(id=${inc.id})}" method="post" class="inline-form">
+                        <select name="technicianCode" style="width:auto;display:inline-block;padding:0.25rem;">
+                            <option th:each="t : ${technicians}" th:value="${t.userCode}"
+                                    th:text="${t.userCode + ' (' + t.currentLoad + '/' + t.maxLoad + ')'}">T101</option>
+                        </select>
+                        <button type="submit" class="btn-sm">Assign</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </article>
+
+    <article>
+        <h3>All Incidents</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th><th>Reporter</th><th>Service</th><th>Category</th>
+                <th>Priority</th><th>Status</th><th>SLA</th><th>Technician</th><th>Created</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="inc : ${allIncidents.content}">
+                <td><a th:href="@{/incidents/{id}(id=${inc.id})}" th:text="${inc.id}">INC1001</a></td>
+                <td th:text="${inc.reporter.userCode}">E101</td>
+                <td th:text="${inc.affectedService.name}">Service</td>
+                <td th:text="${inc.category != null ? inc.category.name : '-'}">Cat</td>
+                <td><span th:if="${inc.priority != null}" class="badge" th:classappend="${'badge-' + inc.priority.name()}"
+                          th:text="${inc.priority.displayName}">P1</span></td>
+                <td><span class="badge" th:text="${inc.status}">NEW</span></td>
+                <td><span th:if="${inc.sla != null and inc.sla.slaStatus != null}" class="badge"
+                          th:classappend="${'badge-' + inc.sla.slaStatus.name()}" th:text="${inc.sla.slaStatus}">ON_TRACK</span></td>
+                <td th:text="${inc.assignedTechnician != null ? inc.assignedTechnician.userCode : 'Unassigned'}">T101</td>
+                <td th:text="${#temporals.format(inc.createdAt, 'yyyy-MM-dd HH:mm')}">Time</td>
+            </tr>
+            </tbody>
+        </table>
+    </article>
+</main>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

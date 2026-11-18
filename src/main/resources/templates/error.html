@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container" style="max-width:680px;margin-top:2rem;">
+    <article>
+        <h2 th:text="${(statusCode ?: 500) + ' - ' + (errorTitle ?: 'Error')}">Error</h2>
+        <p class="flash flash-error" th:text="${errorMessage ?: 'An error occurred.'}">Message</p>
+        <p th:if="${path}"><small>Path: <code th:text="${path}">/</code></small></p>
+        <a role="button" th:href="@{/dashboard}">Return to Dashboard</a>
+    </article>
+</main>
+</body>
+</html>

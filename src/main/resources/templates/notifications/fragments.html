@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="bell" class="bell-wrapper">
+    <details>
+        <summary role="button" class="btn-sm outline" style="color:#fff;border-color:#94a3b8;">
+            Bell <span class="badge badge-P1" th:if="${unreadCount > 0}" th:text="${unreadCount}">0</span>
+            <span th:if="${unreadCount == 0}">(0)</span>
+        </summary>
+        <div class="bell-dropdown">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                <strong>In-App Alerts</strong>
+                <form class="inline-form"
+                      hx-post="/notifications/read-all"
+                      hx-target="#notification-bell-container"
+                      hx-swap="innerHTML">
+                    <button type="submit" class="btn-sm secondary">Mark all read</button>
+                </form>
+            </div>
+            <div th:if="${#lists.isEmpty(recentNotifications)}">
+                <small>No notifications yet.</small>
+            </div>
+            <div th:each="n : ${recentNotifications}"
+                 th:classappend="${!n.readFlag} ? ' unread'"
+                 class="bell-item">
+                <div style="display:flex;justify-content:space-between;">
+                    <strong th:text="${n.subject}">Subject</strong>
+                    <form th:if="${!n.readFlag}" class="inline-form"
+                          th:attr="hx-post=@{/notifications/{id}/read(id=${n.id})}"
+                          hx-target="#notification-bell-container"
+                          hx-swap="innerHTML">
+                        <button type="submit" class="btn-sm outline">Read</button>
+                    </form>
+                </div>
+                <div th:text="${n.message}">Message</div>
+                <small><a th:if="${n.incidentId != null}" th:href="@{/incidents/{id}(id=${n.incidentId})}"
+                          th:text="${'View ' + n.incidentId}" style="color:#2563eb;">View</a></small>
+            </div>
+            <div style="margin-top:0.5rem;text-align:center;">
+                <a th:href="@{/notifications}" style="color:#2563eb;">All Notifications</a>
+            </div>
+        </div>
+    </details>
+</div>
+</body>
+</html>

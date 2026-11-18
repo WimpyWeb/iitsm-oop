@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Catalog & SLA')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="container-wide">
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+    <h2>Categories, Services, Dependencies &amp; SLA Policies</h2>
+
+    <div class="grid">
+        <article>
+            <h3>Categories</h3>
+            <form th:action="@{/admin/catalog/categories}" method="post">
+                <div class="grid">
+                    <input type="text" name="name" required placeholder="Category name"/>
+                    <input type="text" name="keywordsCsv" placeholder="Keywords CSV"/>
+                    <button type="submit" class="btn-sm">Add Category</button>
+                </div>
+            </form>
+            <table>
+                <thead><tr><th>Name</th><th>Keywords</th><th>Action</th></tr></thead>
+                <tbody>
+                <tr th:each="c : ${categories}">
+                    <td th:text="${c.name}">Cat</td>
+                    <td>
+                        <span th:each="kw, st : ${c.keywords}"
+                              th:text="${kw + (st.last ? '' : ', ')}">kw</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/admin/catalog/categories/{id}/delete(id=${c.id})}" method="post" class="inline-form">
+                            <button type="submit" class="btn-sm secondary">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article>
+            <h3>SLA Policies</h3>
+            <form th:action="@{/admin/catalog/sla}" method="post">
+                <div class="grid">
+                    <select name="priority" required>
+                        <option th:each="p : ${priorities}" th:value="${p}" th:text="${p.displayName}">P1</option>
+                    </select>
+                    <input type="number" name="responseMins" min="1" required placeholder="Resp mins"/>
+                    <input type="number" name="resolutionMins" min="1" required placeholder="Res mins"/>
+                    <button type="submit" class="btn-sm">Save SLA</button>
+                </div>
+            </form>
+            <table>
+                <thead><tr><th>Priority</th><th>Response (mins)</th><th>Resolution (mins)</th></tr></thead>
+                <tbody>
+                <tr th:each="sla : ${slaPolicies}">
+                    <td th:text="${sla.priority.displayName}">P1 Critical</td>
+                    <td th:text="${sla.responseMins}">5</td>
+                    <td th:text="${sla.resolutionMins}">30</td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+    </div>
+
+    <article>
+        <h3>Service Catalog &amp; Dependencies</h3>
+        <form th:action="@{/admin/catalog/services}" method="post">
+            <div class="grid">
+                <label>Name <input type="text" name="name" required/></label>
+                <label>Criticality (1–5) <input type="number" name="businessCriticality" min="1" max="5" value="3" required/></label>
+                <label>Keywords CSV <input type="text" name="keywordsCsv" placeholder="payment, checkout"/></label>
+            </div>
+            <div class="grid">
+                <label>Description <input type="text" name="description"/></label>
+                <label>Override Resp Mins <input type="number" name="overrideResponseMins" min="1"/></label>
+                <label>Override Res Mins <input type="number" name="overrideResolutionMins" min="1"/></label>
+                <label>Depends On
+                    <select name="dependsOnIds" multiple size="3">
+                        <option th:each="s : ${services}" th:value="${s.id}" th:text="${s.name}">Svc</option>
+                    </select>
+                </label>
+            </div>
+            <button type="submit" class="btn-sm">Add Service</button>
+        </form>
+
+        <table>
+            <thead>
+            <tr><th>Service</th><th>Criticality</th><th>Keywords</th><th>SLA Override</th><th>Depends On</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${services}">
+                <td th:text="${s.name}">Payment</td>
+                <td th:text="${s.businessCriticality + '/5'}">5/5</td>
+                <td>
+                    <span th:each="kw, st : ${s.keywords}"
+                          th:text="${kw + (st.last ? '' : ', ')}">kw</span>
+                </td>
+                <td th:text="${s.overrideResponseMins != null ? s.overrideResponseMins + 'm / ' + s.overrideResolutionMins + 'm' : 'Default'}">Default</td>
+                <td>
+                    <span th:each="d, st : ${s.dependsOn}">
+                        <span th:text="${d.name}">Database</span><span th:if="${!st.last}">, </span>
+                    </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h4>Dependency Graph</h4>
+        <pre class="mermaid" th:text="${dependencyMermaid}">graph LR</pre>
+    </article>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>if (window.mermaid) { mermaid.initialize({startOnLoad: true}); }</script>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

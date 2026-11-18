@@ -98,7 +98,7 @@ public class Incident {
     private Technician assignedTechnician;
 
     @Embedded
-    private SlaInfo sla;
+    private SlaInfo sla = new SlaInfo();
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "incident_notes", joinColumns = @JoinColumn(name = "incident_id"))
@@ -168,6 +168,7 @@ public class Incident {
         setAffectedUsersCount(affectedUsersCount);
         this.status = IncidentStatus.NEW;
         this.createdAt = Instant.now();
+        this.sla = new SlaInfo();
     }
 
     /** Resolves current state object and delegates classification. */
@@ -544,7 +545,7 @@ public class Incident {
     }
 
     public void setSla(SlaInfo sla) {
-        this.sla = sla;
+        this.sla = (sla == null) ? new SlaInfo() : sla;
     }
 
     /** Returns an unmodifiable view of investigation notes. */

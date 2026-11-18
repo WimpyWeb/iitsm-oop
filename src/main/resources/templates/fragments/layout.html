@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}"/>
+    <title th:text="${pageTitle + ' | I-ITSM'}">I-ITSM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+</head>
+<body>
+<header th:fragment="navbar" class="topbar">
+    <div class="topbar-inner">
+        <div>
+            <a class="brand" th:href="@{/dashboard}">I-ITSM</a>
+            <span sec:authorize="hasRole('EMPLOYEE')">
+                <a th:href="@{/employee/dashboard}">My Incidents</a>
+                <a th:href="@{/employee/incidents/new}">Report Incident</a>
+            </span>
+            <span sec:authorize="hasRole('TECHNICIAN')">
+                <a th:href="@{/technician/dashboard}">Technician Queue</a>
+            </span>
+            <span sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/dashboard}">Admin Console</a>
+                <a th:href="@{/admin/users}">Users</a>
+                <a th:href="@{/admin/teams}">Teams</a>
+                <a th:href="@{/admin/catalog}">Catalog &amp; SLA</a>
+                <a th:href="@{/admin/audit}">Audit Log</a>
+                <a th:href="@{/admin/sla-violations}">SLA Violations</a>
+            </span>
+            <span sec:authorize="isAuthenticated()">
+                <a th:href="@{/incidents/search}">Search</a>
+                <a th:href="@{/notifications}">Notifications</a>
+            </span>
+        </div>
+        <div sec:authorize="isAuthenticated()" style="display:flex;align-items:center;gap:0.75rem;">
+            <div id="notification-bell-container"
+                 hx-get="/notifications/bell"
+                 hx-trigger="load, every 15s"
+                 hx-swap="innerHTML">
+                <a th:href="@{/notifications}">Bell (<span th:text="${unreadCount ?: 0}">0</span>)</a>
+            </div>
+            <span style="font-size:0.84rem;"
+                  th:text="${currentUser != null ? currentUser.displayIdentity + ' (' + currentUser.fullName + ')' : ''}">User</span>
+            <form class="inline-form" th:action="@{/logout}" method="post">
+                <button type="submit" class="btn-sm secondary">Logout</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<div th:fragment="alerts">
+    <div th:if="${successMessage}" class="flash flash-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="flash flash-error" th:text="${errorMessage}"></div>
+    <div th:if="${warnMessage}" class="flash flash-warn" th:text="${warnMessage}"></div>
+</div>
+
+<div th:fragment="scripts">
+    <script>
+        document.body.addEventListener('htmx:configRequest', function (evt) {
+            var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+            var tokenMeta = document.querySelector('meta[name="_csrf"]');
+            if (headerMeta && tokenMeta) {
+                evt.detail.headers[headerMeta.content] = tokenMeta.content;
+            }
+        });
+    </script>
+</div>
+</body>
+</html>
