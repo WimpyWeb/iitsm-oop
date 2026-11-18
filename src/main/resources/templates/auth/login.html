@@ -22,6 +22,20 @@
         <p style="margin-top:1rem;">
             New employee? <a th:href="@{/register}">Register Employee Account</a>
         </p>
+
+        <details style="margin-top:1rem;">
+            <summary><small><strong>Demo Logins</strong> (Password: <code>Password123!</code>)</small></summary>
+            <table style="font-size:0.8rem;margin-top:0.5rem;">
+                <thead><tr><th>Role</th><th>Username</th><th>Code</th></tr></thead>
+                <tbody>
+                <tr><td>Employee</td><td><code>emp1</code> / <code>emp2</code></td><td>E101 / E102</td></tr>
+                <tr><td>Technician</td><td><code>tech1</code> .. <code>tech4</code></td><td>T101 .. T104</td></tr>
+                <tr><td>Team Lead</td><td><code>lead1</code> / <code>lead2</code></td><td>T201 / T202</td></tr>
+                <tr><td>System Admin</td><td><code>sysadmin</code></td><td>A001</td></tr>
+                <tr><td>IT Manager</td><td><code>itmanager</code></td><td>A002</td></tr>
+                </tbody>
+            </table>
+        </details>
     </article>
 </main>
 </body>

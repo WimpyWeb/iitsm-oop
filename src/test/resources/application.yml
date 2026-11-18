@@ -13,6 +13,8 @@ spring:
       enabled: false
 
 app:
+  seed:
+    enabled: false
   priority:
     thresholds:
       p1: 60
