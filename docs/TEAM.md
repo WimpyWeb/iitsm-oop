@@ -1,9 +1,7 @@
-# Team Contributions
+# Team Contributions — Group 83 (CS F213)
 
-| Member | Role | Responsibility | Modules Owned |
-| --- | --- | --- | --- |
-| [Member 1 Name] | Team Lead & Domain Architect | Core OOP model, `User` hierarchy, `IncidentState` pattern, `AuditEntry`, `ITSMException` hierarchy | `domain.model.*`, `domain.enums.*`, `domain.state.*`, `exception.*` |
-| [Member 2 Name] | Algorithms & AI Lead | `PriorityStrategy`, `AssignmentStrategy`, `TfIdfSimilarityEngine`, `KeywordClassifier`, `AiTextService` | `domain.strategy.*`, `intelligence.*` |
-| [Member 3 Name] | Services, SLA & Notifications Lead | `IncidentService`, `SlaEscalationMonitor`, `Observer` pattern, `Notifier` adapters, `DataSeeder` | `service.*`, `domain.observer.*`, `domain.factory.*`, `notification.*`, `config.DataSeeder` |
-| [Member 4 Name] | Web UI, Security & Analytics Lead | `SecurityConfig`, Thymeleaf + HTMX + Pico.css views, Chart.js reports, `ReportService` | `config.SecurityConfig`, `controller.*`, `templates/**`, `static/css/app.css` |
-| [Member 5 Name] | REST API, Persistence & QA Lead | JPA Repositories & `Specification` search, REST API + Swagger, JUnit/MockMvc test suite, Docker/CI & Docs | `repository.*`, `controller.api.*`, `src/test/**`, `Dockerfile`, `.github/workflows/ci.yml`, `docs/*` |
+| Member | ID | Role | Responsibility | Modules Owned |
+| --- | --- | --- | --- | --- |
+| **Vinayak Nath** | `2024B2AD1046H` | Domain, State & Core Services Lead | Core OOP model, `User` hierarchy, State lifecycle (`IncidentState`), `AuditEntry`, `ITSMException` hierarchy, `IncidentService`, `DataSeeder`, Docker/CI | `domain.model.*`, `domain.enums.*`, `domain.state.*`, `domain.factory.*`, `exception.*`, `service.IncidentService`, `config.DataSeeder`, `Dockerfile`, `.github/workflows/ci.yml` |
+| **Anubhav Amarnath Savur** | `2024B3AD0581H` | Intelligence, SLA & Notifications Lead | `PriorityStrategy` & `AssignmentStrategy`, `TfIdfSimilarityEngine`, `KeywordClassifier`, `AiTextService` (Local + Gemini), `OutageCorrelator`, `SlaEscalationMonitor`, `Observer` + `Notifier` adapters | `domain.strategy.*`, `domain.observer.*`, `intelligence.*`, `notification.*`, `service.SlaEscalationMonitor`, `service.NotificationService`, `service.AuditService` |
+| **Sai Yuvraj Guntha** | `2024B3AD0540H` | Persistence, Security, Web UI & Analytics Lead | JPA Repositories & `Specification` search, Spring Security (`SecurityConfig`), Thymeleaf + HTMX + Pico.css views, `ReportService` (Chart.js), `/api/v1` REST + Swagger, Test suite & Docs | `repository.*`, `config.SecurityConfig`, `config.OpenApiConfig`, `controller.*`, `service.UserService`, `service.AdminCatalogService`, `service.ReportService`, `templates/**`, `src/test/**`, `docs/*` |

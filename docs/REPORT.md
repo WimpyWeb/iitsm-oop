@@ -37,5 +37,9 @@ Three structured demo workflows (`APP_SLA_TIME_SCALE=60`) exercise intake/notifi
 - **Strengths**: Clean separation of domain patterns from web/persistence plumbing, zero-JS-build reactive UI, deterministic offline AI + optional Gemini adapter, and full auditability.
 - **Limitations**: SMS delivery and default email (`simulated` mode) write to local logs unless configured for live gateways/SMTP; H2 file mode restricts deployment to a single JVM process until migrated to PostgreSQL; `LocalTfIdfAiService` relies on keyword/corpus overlap when `GEMINI_API_KEY` is unset.
 
-## 11. Team Contributions
+## 11. Team Contributions (Group 83)
+- **Vinayak Nath (`2024B2AD1046H`)**: Domain model, `User` inheritance, `IncidentState` pattern, `ITSMException` hierarchy, `IncidentService`, `DataSeeder`, Docker/CI.
+- **Anubhav Amarnath Savur (`2024B3AD0581H`)**: Priority & Assignment strategies, `TfIdfSimilarityEngine`, `KeywordClassifier`, `AiTextService`, `OutageCorrelator`, `SlaEscalationMonitor`, `Observer` & `Notifier` adapters.
+- **Sai Yuvraj Guntha (`2024B3AD0540H`)**: JPA repositories & `Specification` search, Spring Security, Thymeleaf + HTMX + Pico.css UI, `ReportService` (Chart.js), `/api/v1` REST + Swagger, test suites & documentation.
+
 See [TEAM.md](TEAM.md) and [DEFENSE.md](DEFENSE.md).

@@ -9,14 +9,12 @@ set APP_SLA_MONITOR_INTERVAL_SECONDS=5
 ```
 Open `http://localhost:8080` and `http://localhost:8080/swagger-ui.html`. All demo passwords: **`Password123!`**.
 
-## 15–20 Minute Team Presentation Timeline
+## 15–20 Minute Team Presentation Timeline (Group 83)
 | Slot | Member | Module Explained | Live Demo Action |
 | --- | --- | --- | --- |
-| 0:00–2:30 | Member 1 (Lead) | Problem Analysis, Domain Entities, User Hierarchy (`User -> Employee/Technician/TeamLead/Admin`) | Introduce team, open `/login` demo credentials, explain `INC1001` Payment scenario |
-| 2:30–6:30 | Member 2 | Intake Pipeline, `PriorityStrategy` (`WEIGHTED`/`RULE_BASED`), `KeywordClassifier`, `TfIdfSimilarityEngine` | **Workflow 1** (Report -> Prioritize -> Assign -> Notify) |
-| 6:30–11:00 | Member 3 | State Pattern (`IncidentState`), `SlaEscalationMonitor`, Multi-Level Escalation, `Observer` + `Notifier` Adapters | **Workflow 2** (Investigate -> SLA Breach/Escalation -> Resolve -> Verify -> Close) |
-| 11:00–14:30 | Member 4 | Outage Correlation, `ServiceEntity.dependsOn` Root Cause, `ReportService` (Chart.js + HTMX) | **Workflow 3** (Duplicates + Dependency Outage + Live Reports) |
-| 14:30–17:30 | Member 5 | Spring Security (CSRF, BCrypt, Roles), JPA Specifications Search, REST `/api/v1` + Swagger + CI/Docker | Run Swagger `/api/v1/reports/summary`, `/admin/audit`, `/admin/catalog` Mermaid graph, show `./mvnw test` green |
+| 0:00–6:00 | **Vinayak Nath** (`2024B2AD1046H`) | Problem Analysis, `User` Inheritance, `IncidentState` Pattern (`NEW -> CLOSED`), `IncidentService`, `DataSeeder` | Introduce Group 83, show `/login` demo logins & `INC1001`, run **Workflow 1** (Report -> Prioritize -> Assign) |
+| 6:00–12:00 | **Anubhav Amarnath Savur** (`2024B3AD0581H`) | `PriorityStrategy` / `AssignmentStrategy`, `TfIdfSimilarityEngine`, `SlaEscalationMonitor`, `Observer` & `Notifier` Adapters | Run **Workflow 2** (Accelerated SLA Warning/Breach/Escalation -> Resolve -> Verify -> Close) & `./data/email-notifications.log` |
+| 12:00–18:00 | **Sai Yuvraj Guntha** (`2024B3AD0540H`) | Dependency Correlation (`OutageCorrelator`), `ReportService` (Chart.js + HTMX), Spring Security, `Specification` Search, REST/Swagger & Tests | Run **Workflow 3** (Duplicates + `Database -> Payment` Outage + `/reports`), Swagger `/api/v1/reports/summary`, `/admin/audit`, and `./mvnw test` |
 
 ## Workflow 1: Report -> Prioritize -> Assign -> Notify
 1. Sign in as **`emp1`** (`Employee E101`) -> click **Report Incident** (`/employee/incidents/new`).
