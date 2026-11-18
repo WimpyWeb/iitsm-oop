@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:iitsmtest;DB_CLOSE_DELAY=-1;MODE=LEGACY
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: false
+
+app:
+  priority:
+    thresholds:
+      p1: 60
+      p2: 30
+      p3: 10
+  sla:
+    time-scale: 1
+    monitor-interval-seconds: 3600
+    warning-threshold-percent: 80
+  escalation:
+    min-priority: P1
+  notify:
+    email:
+      mode: simulated
+      from: test@iitsm.local
+      log-file: ./target/test-email.log
+    sms:
+      log-file: ./target/test-sms.log
+  ai:
+    gemini:
+      api-key: ""
+      model: gemini-2.5-flash

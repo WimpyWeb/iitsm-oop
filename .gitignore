@@ -1,0 +1,25 @@
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# Local runtime DB and logs
+data/
+*.mv.db
+*.trace.db
+*.log
+
+# IDE and OS
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+.DS_Store
+Thumbs.db
