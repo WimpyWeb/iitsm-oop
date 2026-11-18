@@ -3,7 +3,7 @@ WORKDIR /app
 RUN apk add --no-cache curl
 COPY .mvn .mvn
 COPY mvnw pom.xml ./
-RUN chmod +x mvnw
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 COPY src src
 RUN ./mvnw -B package -DskipTests
 
