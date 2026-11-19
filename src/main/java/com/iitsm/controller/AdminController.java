@@ -232,6 +232,21 @@ public class AdminController {
         return "redirect:/admin/catalog";
     }
 
+    /** Updates an existing category name and keywords. */
+    @PostMapping("/catalog/categories/{id}")
+    public String updateCategory(@PathVariable Long id,
+                                 @Valid @ModelAttribute CreateCategoryForm form,
+                                 BindingResult bindingResult,
+                                 RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Category name is required.");
+            return "redirect:/admin/catalog";
+        }
+        catalogService.updateCategory(id, form.name(), parseCsv(form.keywordsCsv()));
+        redirectAttributes.addFlashAttribute("successMessage", "Category '" + form.name() + "' updated.");
+        return "redirect:/admin/catalog";
+    }
+
     /** Deletes an unused category. */
     @PostMapping("/catalog/categories/{id}/delete")
     public String deleteCategory(@PathVariable Long id, RedirectAttributes redirectAttributes) {
@@ -254,6 +269,24 @@ public class AdminController {
                 parseCsv(form.keywordsCsv()), form.overrideResponseMins(),
                 form.overrideResolutionMins(), form.dependsOnIds());
         redirectAttributes.addFlashAttribute("successMessage", "Service '" + form.name() + "' created.");
+        return "redirect:/admin/catalog";
+    }
+
+    /** Updates an existing service catalog entry, SLA overrides, and dependencies. */
+    @PostMapping("/catalog/services/{id}")
+    public String updateService(@PathVariable Long id,
+                                @Valid @ModelAttribute CreateServiceForm form,
+                                BindingResult bindingResult,
+                                RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Invalid service details.");
+            return "redirect:/admin/catalog";
+        }
+        catalogService.updateService(
+                id, form.name(), form.description(), form.businessCriticality(),
+                parseCsv(form.keywordsCsv()), form.overrideResponseMins(),
+                form.overrideResolutionMins(), form.dependsOnIds());
+        redirectAttributes.addFlashAttribute("successMessage", "Service '" + form.name() + "' updated.");
         return "redirect:/admin/catalog";
     }
 

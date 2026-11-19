@@ -11,10 +11,14 @@
     <script src="https://unpkg.com/htmx.org@2.0.3"></script>
 </head>
 <body>
-<header th:fragment="navbar" class="topbar">
+<header th:fragment="navbar" class="topbar"
+        th:classappend="${currentUserRole != null ? ' topbar-' + currentUserRole : ''}">
     <div class="topbar-inner">
         <div>
             <a class="brand" th:href="@{/dashboard}">I-ITSM</a>
+            <span th:if="${currentUserRole == 'EMPLOYEE'}" class="role-pill">Employee Portal</span>
+            <span th:if="${currentUserRole == 'TECHNICIAN'}" class="role-pill">Technician Workbench</span>
+            <span th:if="${currentUserRole == 'ADMIN'}" class="role-pill">Admin Command Center</span>
             <span sec:authorize="hasRole('EMPLOYEE')">
                 <a th:href="@{/employee/dashboard}">My Incidents</a>
                 <a th:href="@{/employee/incidents/new}">Report Incident</a>

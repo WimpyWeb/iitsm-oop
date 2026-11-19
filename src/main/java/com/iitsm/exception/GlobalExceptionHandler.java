@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.util.stream.Collectors;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -46,6 +47,16 @@ public class GlobalExceptionHandler {
     public Object handleNotFound(NoResourceFoundException ex,
                                  HttpServletRequest request, HttpServletResponse response) {
         return buildResponse(404, "NotFound", ex.getMessage(), request, response);
+    }
+
+    /** Handles unwrapped Spring Data access errors as PersistenceFailureException without leaking SQL details. */
+    @ExceptionHandler(DataAccessException.class)
+    public Object handleDataAccess(DataAccessException ex,
+                                   HttpServletRequest request, HttpServletResponse response) {
+        PersistenceFailureException wrapped = new PersistenceFailureException(
+                "A database persistence error occurred. Please try again.", ex);
+        return buildResponse(wrapped.getHttpStatus(), "PersistenceFailureException",
+                wrapped.getMessage(), request, response);
     }
 
     /** Fallback handler for unexpected server errors. */

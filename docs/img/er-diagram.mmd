@@ -1,0 +1,19 @@
+erDiagram
+    USERS ||--o| EMPLOYEES : inherits
+    USERS ||--o| TECHNICIANS : inherits
+    TECHNICIANS ||--o| TEAM_LEADS : inherits
+    USERS ||--o| ADMINISTRATORS : inherits
+    TEAMS ||--o{ TECHNICIANS : aggregates
+    TEAMS ||--|| TEAM_LEADS : led_by
+
+    EMPLOYEES ||--o{ INCIDENTS : reports
+    TECHNICIANS ||--o{ INCIDENTS : assigned_to
+    SERVICES ||--o{ INCIDENTS : affects
+    CATEGORIES ||--o{ INCIDENTS : classifies
+    SERVICES }o--o{ SERVICES : depends_on
+
+    INCIDENTS ||--o{ INCIDENT_NOTES : composes
+    INCIDENTS ||--o{ INCIDENT_INFO_REQUESTS : requests
+    INCIDENTS ||--o{ AUDIT_ENTRIES : logs
+    INCIDENTS ||--o{ SLA_VIOLATIONS : breaches
+    USERS ||--o{ NOTIFICATIONS : receives

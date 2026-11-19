@@ -1,0 +1,26 @@
+flowchart LR
+    Emp(["Employee (E101+)"])
+    Tech(["Technician (T101+)"])
+    Lead(["TeamLead (T201+)"])
+    Adm(["Administrator (A001/A002)"])
+
+    UC1["Self-Register / Login"]
+    UC2["Report Incident (Auto-Classify & Duplicate Check)"]
+    UC3["Track, Edit Pre-Resolved, Answer Info, Verify/Reopen, Feedback"]
+    UC4["Acknowledge, Investigate, Request Info, Resolve, Decline"]
+    UC5["Toggle Availability & Claim Recommended Tickets"]
+    UC6["Handle Level-1 Escalation & Team Reassignment"]
+    UC7["Manage Users, Teams, Catalog, Services, SLA Policies"]
+    UC8["Switch Runtime Strategies & View Audit / Violations / Reports"]
+
+    Emp --> UC1
+    Emp --> UC2
+    Emp --> UC3
+    Tech --> UC1
+    Tech --> UC4
+    Tech --> UC5
+    Lead --> UC4
+    Lead --> UC6
+    Adm --> UC1
+    Adm --> UC7
+    Adm --> UC8

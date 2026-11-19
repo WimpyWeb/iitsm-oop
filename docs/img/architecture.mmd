@@ -1,0 +1,11 @@
+flowchart TD
+    UI["Thymeleaf + HTMX + Pico.css Web UI"] --> WC["Web Controllers (Auth, Employee, Tech, Admin, Report)"]
+    API["REST Clients / Swagger UI"] --> RC["REST Controllers (/api/v1/**)"]
+    WC --> SEC["SecurityConfig (Dual FilterChain + @PreAuthorize)"]
+    RC --> SEC
+    SEC --> SVC["@Transactional Services (Incident, User, Catalog, SLA Monitor, Report, Audit, Notify)"]
+    SVC --> INTEL["Intelligence (TF-IDF, KeywordClassifier, Recommender, OutageCorrelator, SlaRiskPredictor, AiTextService)"]
+    SVC --> DOM["Domain Layer (Entities, State, Strategy, Factory, Observer)"]
+    DOM --> NOTIF["Notifier Adapters (InApp, Email/SMTP, SMS)"]
+    SVC --> REPO["Spring Data JPA Repositories & Specifications"]
+    REPO --> DB[("H2 Persistent File DB ./data/iitsm")]

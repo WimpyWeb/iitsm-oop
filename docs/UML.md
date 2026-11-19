@@ -102,7 +102,7 @@ classDiagram
     Incident --> Technician : assignedTechnician
 ```
 
-## 3. State & Strategy Patterns
+## 3. State Pattern
 ```mermaid
 classDiagram
     class IncidentState {
@@ -112,7 +112,12 @@ classDiagram
         +classify(...) void
         +assign(...) void
         +acknowledge(...) void
+        +startProgress(...) void
+        +requestInfo(...) void
+        +provideInfo(...) void
         +resolve(...) void
+        +verify(...) void
+        +reopen(...) void
         +close(...) void
     }
     class AbstractIncidentState
@@ -120,36 +125,53 @@ classDiagram
         -Map~IncidentStatus,IncidentState~ STATES
         +forStatus(IncidentStatus)$ IncidentState
     }
-    class PriorityStrategy {
-        <<interface>>
-        +getName() String
-        +calculatePriority(Incident) PriorityAssessment
-    }
-    class AssignmentStrategy {
-        <<interface>>
-        +getName() String
-        +selectTechnician(Incident, List~Technician~) Optional~Technician~
-    }
 
     IncidentState <|.. AbstractIncidentState
     AbstractIncidentState <|-- NewState
     AbstractIncidentState <|-- ClassifiedState
     AbstractIncidentState <|-- AssignedState
+    AbstractIncidentState <|-- AcknowledgedState
     AbstractIncidentState <|-- InProgressState
+    AbstractIncidentState <|-- PendingInfoState
     AbstractIncidentState <|-- ResolvedState
     AbstractIncidentState <|-- VerifiedState
     AbstractIncidentState <|-- ClosedState
     IncidentStateFactory --> IncidentState
-    PriorityStrategy <|.. WeightedScorePriorityStrategy
-    PriorityStrategy <|.. RuleBasedPriorityStrategy
-    AssignmentStrategy <|.. SkillBasedAssignmentStrategy
-    AssignmentStrategy <|.. LoadBasedAssignmentStrategy
-    AssignmentStrategy <|.. RoundRobinAssignmentStrategy
-    AssignmentStrategy <|.. ExperienceBasedAssignmentStrategy
-    AssignmentStrategy <|.. PriorityBasedAssignmentStrategy
 ```
 
-## 4. Observer, Factory & Notifier Adapter
+## 4. Strategy Pattern
+```mermaid
+classDiagram
+    class PriorityStrategy {
+        <<interface>>
+        +getName() String
+        +calculatePriority(Incident) PriorityAssessment
+    }
+    class WeightedScorePriorityStrategy
+    class RuleBasedPriorityStrategy
+
+    class AssignmentStrategy {
+        <<interface>>
+        +getName() String
+        +selectTechnician(Incident, List~Technician~) Optional~Technician~
+    }
+    class AbstractAssignmentStrategy {
+        <<abstract>>
+        #filterEligible(Incident, List~Technician~) List~Technician~
+        #countSkillMatches(Incident, Technician) int
+    }
+
+    PriorityStrategy <|.. WeightedScorePriorityStrategy
+    PriorityStrategy <|.. RuleBasedPriorityStrategy
+    AssignmentStrategy <|.. AbstractAssignmentStrategy
+    AbstractAssignmentStrategy <|-- SkillBasedAssignmentStrategy
+    AbstractAssignmentStrategy <|-- LoadBasedAssignmentStrategy
+    AbstractAssignmentStrategy <|-- RoundRobinAssignmentStrategy
+    AbstractAssignmentStrategy <|-- ExperienceBasedAssignmentStrategy
+    AbstractAssignmentStrategy <|-- PriorityBasedAssignmentStrategy
+```
+
+## 5. Observer, Factory & Notifier Adapter
 ```mermaid
 classDiagram
     class IncidentEventPublisher {
@@ -174,7 +196,7 @@ classDiagram
     }
     class InAppNotifier
     class EmailNotifier {
-        -JavaMailSender mailSender
+        -ObjectProvider~JavaMailSender~ mailSenderProvider
         -String mode
     }
     class SmsNotifier

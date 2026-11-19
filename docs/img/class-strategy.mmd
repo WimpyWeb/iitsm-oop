@@ -1,0 +1,28 @@
+classDiagram
+    class PriorityStrategy {
+        <<interface>>
+        +getName() String
+        +calculatePriority(Incident) PriorityAssessment
+    }
+    class WeightedScorePriorityStrategy
+    class RuleBasedPriorityStrategy
+
+    class AssignmentStrategy {
+        <<interface>>
+        +getName() String
+        +selectTechnician(Incident, List~Technician~) Optional~Technician~
+    }
+    class AbstractAssignmentStrategy {
+        <<abstract>>
+        #filterEligible(Incident, List~Technician~) List~Technician~
+        #countSkillMatches(Incident, Technician) int
+    }
+
+    PriorityStrategy <|.. WeightedScorePriorityStrategy
+    PriorityStrategy <|.. RuleBasedPriorityStrategy
+    AssignmentStrategy <|.. AbstractAssignmentStrategy
+    AbstractAssignmentStrategy <|-- SkillBasedAssignmentStrategy
+    AbstractAssignmentStrategy <|-- LoadBasedAssignmentStrategy
+    AbstractAssignmentStrategy <|-- RoundRobinAssignmentStrategy
+    AbstractAssignmentStrategy <|-- ExperienceBasedAssignmentStrategy
+    AbstractAssignmentStrategy <|-- PriorityBasedAssignmentStrategy

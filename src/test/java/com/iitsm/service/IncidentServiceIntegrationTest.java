@@ -30,6 +30,7 @@ import com.iitsm.repository.IncidentSearchCriteria;
 import com.iitsm.repository.NotificationRepository;
 import com.iitsm.repository.ServiceRepository;
 import com.iitsm.repository.SlaPolicyRepository;
+import com.iitsm.repository.SlaViolationRepository;
 import com.iitsm.repository.TeamRepository;
 import com.iitsm.repository.TechnicianRepository;
 import com.iitsm.repository.UserRepository;
@@ -57,6 +58,7 @@ class IncidentServiceIntegrationTest {
 
     @Autowired private IncidentRepository incidentRepository;
     @Autowired private AuditEntryRepository auditEntryRepository;
+    @Autowired private SlaViolationRepository slaViolationRepository;
     @Autowired private NotificationRepository notificationRepository;
     @Autowired private TeamRepository teamRepository;
     @Autowired private UserRepository userRepository;
@@ -77,9 +79,16 @@ class IncidentServiceIntegrationTest {
         emailNotifier.setMode("simulated");
         incidentService.setSlaTimeScale(1);
 
+        slaViolationRepository.deleteAll();
         notificationRepository.deleteAll();
         auditEntryRepository.deleteAll();
         incidentRepository.deleteAll();
+        technicianRepository.findAll().forEach(t -> {
+            if (t.getTeam() != null) {
+                t.setTeam(null);
+                technicianRepository.save(t);
+            }
+        });
         teamRepository.deleteAll();
         userRepository.deleteAll();
         serviceRepository.deleteAll();

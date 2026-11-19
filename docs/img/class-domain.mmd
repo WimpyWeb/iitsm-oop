@@ -1,0 +1,68 @@
+classDiagram
+    class User {
+        <<abstract>>
+        -Long id
+        -String userCode
+        -String username
+        -String email
+        -Role role
+        -boolean active
+        +getDisplayIdentity()* String
+    }
+    class Employee {
+        -String department
+        -String jobTitle
+    }
+    class Technician {
+        -Set~String~ skills
+        -int experienceYears
+        -boolean available
+        -int maxLoad
+        -int currentLoad
+        -Map~String,Integer~ serviceExperienceCounts
+        +canAcceptLoad() boolean
+        +assignLoad() void
+        +releaseLoad() void
+    }
+    class TeamLead
+    class Administrator {
+        -AdminLevel adminLevel
+    }
+    class Team {
+        -String name
+        -String specialtyCategory
+        +addMember(Technician) void
+    }
+    class Incident {
+        -String id
+        -IncidentStatus status
+        -Priority priority
+        -double priorityScore
+        -int escalationLevel
+        +classify(...) void
+        +assign(Technician) void
+        +acknowledge(Technician) void
+        +resolve(...) void
+        +verify(User) void
+        +close(...) void
+    }
+    class SlaInfo {
+        -Instant responseDue
+        -Instant resolutionDue
+        -SlaStatus slaStatus
+    }
+    class Resolution {
+        -String summary
+        -String steps
+    }
+
+    User <|-- Employee
+    User <|-- Technician
+    Technician <|-- TeamLead
+    User <|-- Administrator
+    Team o-- Technician : aggregates
+    Team --> TeamLead : led by
+    Incident *-- SlaInfo : composes
+    Incident *-- Resolution : composes
+    Incident --> Employee : reporter
+    Incident --> Technician : assignedTechnician

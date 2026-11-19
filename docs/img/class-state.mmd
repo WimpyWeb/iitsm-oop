@@ -1,0 +1,33 @@
+classDiagram
+    class IncidentState {
+        <<interface>>
+        +getStatus() IncidentStatus
+        +getAllowedTransitions() Set~IncidentStatus~
+        +classify(...) void
+        +assign(...) void
+        +acknowledge(...) void
+        +startProgress(...) void
+        +requestInfo(...) void
+        +provideInfo(...) void
+        +resolve(...) void
+        +verify(...) void
+        +reopen(...) void
+        +close(...) void
+    }
+    class AbstractIncidentState
+    class IncidentStateFactory {
+        -Map~IncidentStatus,IncidentState~ STATES
+        +forStatus(IncidentStatus)$ IncidentState
+    }
+
+    IncidentState <|.. AbstractIncidentState
+    AbstractIncidentState <|-- NewState
+    AbstractIncidentState <|-- ClassifiedState
+    AbstractIncidentState <|-- AssignedState
+    AbstractIncidentState <|-- AcknowledgedState
+    AbstractIncidentState <|-- InProgressState
+    AbstractIncidentState <|-- PendingInfoState
+    AbstractIncidentState <|-- ResolvedState
+    AbstractIncidentState <|-- VerifiedState
+    AbstractIncidentState <|-- ClosedState
+    IncidentStateFactory --> IncidentState

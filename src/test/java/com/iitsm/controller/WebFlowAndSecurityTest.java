@@ -25,6 +25,7 @@ import com.iitsm.repository.IncidentRepository;
 import com.iitsm.repository.NotificationRepository;
 import com.iitsm.repository.ServiceRepository;
 import com.iitsm.repository.SlaPolicyRepository;
+import com.iitsm.repository.SlaViolationRepository;
 import com.iitsm.repository.TeamRepository;
 import com.iitsm.repository.TechnicianRepository;
 import com.iitsm.repository.UserRepository;
@@ -49,6 +50,7 @@ class WebFlowAndSecurityTest {
     @Autowired private UserService userService;
     @Autowired private AdminCatalogService catalogService;
 
+    @Autowired private SlaViolationRepository slaViolationRepository;
     @Autowired private NotificationRepository notificationRepository;
     @Autowired private AuditEntryRepository auditEntryRepository;
     @Autowired private IncidentRepository incidentRepository;
@@ -64,6 +66,7 @@ class WebFlowAndSecurityTest {
 
     @BeforeEach
     void setUp() {
+        slaViolationRepository.deleteAll();
         notificationRepository.deleteAll();
         auditEntryRepository.deleteAll();
         incidentRepository.deleteAll();

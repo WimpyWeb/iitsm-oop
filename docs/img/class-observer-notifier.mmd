@@ -1,0 +1,35 @@
+classDiagram
+    class IncidentEventPublisher {
+        -CopyOnWriteArrayList~IncidentObserver~ observers
+        +registerObserver(IncidentObserver) void
+        +publish(IncidentEvent) void
+    }
+    class IncidentObserver {
+        <<interface>>
+        +onIncidentEvent(IncidentEvent) void
+    }
+    class AuditObserver
+    class NotificationObserver
+    class NotifierFactory {
+        -Map~String,Notifier~ notifiers
+        +getNotifier(String) Notifier
+    }
+    class Notifier {
+        <<interface>>
+        +getChannel() String
+        +send(Notification, User) void
+    }
+    class InAppNotifier
+    class EmailNotifier {
+        -ObjectProvider~JavaMailSender~ mailSenderProvider
+        -String mode
+    }
+    class SmsNotifier
+
+    IncidentEventPublisher o-- IncidentObserver
+    IncidentObserver <|.. AuditObserver
+    IncidentObserver <|.. NotificationObserver
+    NotifierFactory o-- Notifier
+    Notifier <|.. InAppNotifier
+    Notifier <|.. EmailNotifier
+    Notifier <|.. SmsNotifier

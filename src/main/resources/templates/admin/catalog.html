@@ -27,6 +27,14 @@
                               th:text="${kw + (st.last ? '' : ', ')}">kw</span>
                     </td>
                     <td>
+                        <details class="inline-form">
+                            <summary class="btn-sm outline" style="display:inline-block;cursor:pointer;">Edit</summary>
+                            <form th:action="@{/admin/catalog/categories/{id}(id=${c.id})}" method="post" style="margin-top:0.35rem;">
+                                <input type="text" name="name" th:value="${c.name}" required/>
+                                <input type="text" name="keywordsCsv" placeholder="Keywords CSV"/>
+                                <button type="submit" class="btn-sm">Save</button>
+                            </form>
+                        </details>
                         <form th:action="@{/admin/catalog/categories/{id}/delete(id=${c.id})}" method="post" class="inline-form">
                             <button type="submit" class="btn-sm secondary">Delete</button>
                         </form>
@@ -84,7 +92,7 @@
 
         <table>
             <thead>
-            <tr><th>Service</th><th>Criticality</th><th>Keywords</th><th>SLA Override</th><th>Depends On</th></tr>
+            <tr><th>Service</th><th>Criticality</th><th>Keywords</th><th>SLA Override</th><th>Depends On</th><th>Edit</th></tr>
             </thead>
             <tbody>
             <tr th:each="s : ${services}">
@@ -99,6 +107,20 @@
                     <span th:each="d, st : ${s.dependsOn}">
                         <span th:text="${d.name}">Database</span><span th:if="${!st.last}">, </span>
                     </span>
+                </td>
+                <td>
+                    <details>
+                        <summary class="btn-sm outline" style="display:inline-block;cursor:pointer;">Edit</summary>
+                        <form th:action="@{/admin/catalog/services/{id}(id=${s.id})}" method="post" style="margin-top:0.35rem;">
+                            <input type="text" name="name" th:value="${s.name}" required/>
+                            <input type="number" name="businessCriticality" min="1" max="5" th:value="${s.businessCriticality}" required/>
+                            <input type="text" name="description" th:value="${s.description}" placeholder="Description"/>
+                            <input type="text" name="keywordsCsv" placeholder="Keywords CSV"/>
+                            <input type="number" name="overrideResponseMins" min="1" th:value="${s.overrideResponseMins}" placeholder="Resp mins"/>
+                            <input type="number" name="overrideResolutionMins" min="1" th:value="${s.overrideResolutionMins}" placeholder="Res mins"/>
+                            <button type="submit" class="btn-sm">Save</button>
+                        </form>
+                    </details>
                 </td>
             </tr>
             </tbody>
