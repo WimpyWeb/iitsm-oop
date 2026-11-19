@@ -11,6 +11,8 @@
 
 ---
 
+<div class="page-break"></div>
+
 ## 1. Problem Analysis
 
 ### 1.1 Problem Statement
@@ -56,7 +58,9 @@ I-ITSM implements a layered Spring Boot 3.3 + Java 21 architecture anchored by *
 
 ### 2.3 Priority Algorithms & Mathematical Rationale
 **Weighted Score Strategy (`WeightedScorePriorityStrategy`, default):**
-$$\text{score} = \text{impact} \times \text{urgency} \times \text{businessCriticality} \times \text{usersFactor}$$
+```text
+score = impact × urgency × businessCriticality × usersFactor
+```
 - `usersFactor`: `1.0` (`< 10` affected users), `1.2` (`10–99` affected users), `1.5` (`>= 100` affected users).
 - Externalized thresholds: `P1 >= 60` (**Critical**), `P2 >= 30` (**High**), `P3 >= 10` (**Medium**), else `P4` (**Low**).
 - **Rationale**: Multiplicative scoring couples technical severity (`impact * urgency`) with enterprise exposure (`businessCriticality * usersFactor`), ensuring business-critical services like `Payment` (`criticality = 5`) reach `P1` rapidly when broad user populations are impacted.
@@ -71,6 +75,8 @@ $$\text{score} = \text{impact} \times \text{urgency} \times \text{businessCritic
 - `@Scheduled` `SlaEscalationMonitor` flags `AT_RISK` once at `>= 80%` elapsed, records unique `SlaViolation` rows (`RESPONSE` / `RESOLUTION`) once past deadline (`BREACHED`), and escalates unacknowledged tickets meeting `escalation.min-priority` per response interval across `0 (Technician) -> 1 (TeamLead) -> 2 (SYSTEM_ADMIN) -> 3 (IT_MANAGER)`.
 
 ---
+
+<div class="page-break"></div>
 
 ## 3. System Architecture
 
@@ -93,6 +99,8 @@ I-ITSM enforces strict unidirectional layering (`controller -> service -> domain
 
 ---
 
+<div class="page-break"></div>
+
 ## 4. UML Diagrams
 
 ### 4.1 Use-Case Diagram
@@ -100,15 +108,21 @@ Actors (`Employee`, `Technician`, `TeamLead`, `Administrator`) interact with rol
 
 ![Use-Case Diagram](img/use-case.png)
 
+<div class="page-break"></div>
+
 ### 4.2 Domain Hierarchy, Aggregation & Composition
 Shows `User` inheritance (`JOINED`), `Team` aggregation over `Technician` and `TeamLead`, and `Incident` composition of `SlaInfo` and `Resolution`.
 
 ![Domain Class Diagram](img/class-domain.png)
 
+<div class="page-break"></div>
+
 ### 4.3 State Pattern
-All 9 concrete lifecycle states extend `AbstractIncidentState` and are resolved in $O(1)$ from `IncidentStateFactory`'s `EnumMap`.
+All 9 concrete lifecycle states extend `AbstractIncidentState` and are resolved in `O(1)` from `IncidentStateFactory`'s `EnumMap`.
 
 ![State Pattern Class Diagram](img/class-state.png)
+
+<div class="page-break"></div>
 
 ### 4.4 Strategy Pattern
 Runtime-swappable `PriorityStrategy` and `AssignmentStrategy` hierarchies, sharing candidate filtering and skill matching via `AbstractAssignmentStrategy`.
@@ -159,6 +173,8 @@ Java enforces encapsulation (`private` fields, validated setters, no setters on 
 
 ---
 
+<div class="page-break"></div>
+
 ## 6. Database Design
 
 ![Entity-Relationship Diagram](img/er-diagram.png)
@@ -183,9 +199,13 @@ Java enforces encapsulation (`private` fields, validated setters, no setters on 
 
 ---
 
+<div class="page-break"></div>
+
 ## 7. Testing
 
 All **61 automated JUnit 5 / Mockito / MockMvc tests** across **12 test classes** verify domain invariants, algorithms, persistence, security, REST/Swagger endpoints, and failure handling.
+
+### 7.1 State Lifecycle & Priority Unit Tests (TC01–TC10)
 
 | ID | Category | Input / Scenario | Expected Outcome | Exact JUnit Class & Method |
 | --- | --- | --- | --- | --- |
@@ -199,6 +219,11 @@ All **61 automated JUnit 5 / Mockito / MockMvc tests** across **12 test classes*
 | TC08 | Priority Formula | Same service/severity with 5, 50, 100 affected users | Scores `36.0`, `43.2`, `54.0` (`1.0`, `1.2`, `1.5` factors) | `PriorityStrategyTest.weightedScoreCalculatesExactFormulaAcrossUserTiers` |
 | TC09 | Boundary Thresholds | Inputs hitting `60`, `54`, `30`, `27`, `10`, `9` | Classified `P1`, `P2`, `P2`, `P3`, `P3`, `P4` | `PriorityStrategyTest.weightedScoreBoundaryThresholdsClassifyCorrectly` |
 | TC10 | Rule-Based Priority | Criticality 5 & impact 4; Security & impact 4 | Promoted to `P1` under `RuleBasedPriorityStrategy` | `PriorityStrategyTest.ruleBasedPromotesCriticality5WithImpact4ToP1` |
+
+### 7.2 Assignment, Encapsulation, TF-IDF & Observer Unit Tests (TC11–TC18)
+
+| ID | Category | Input / Scenario | Expected Outcome | Exact JUnit Class & Method |
+| --- | --- | --- | --- | --- |
 | TC11 | Skill Assignment | Pool with network vs payment skills on Payment ticket | Selects `T102` with highest skill alignment | `AssignmentStrategyTest.skillBasedSelectsTechnicianWithHighestSkillAlignment` |
 | TC12 | Load / RR Assignment | 3 eligible technicians with differing loads | Load picks lowest ratio (`T101`); RR cycles `T101 -> T102 -> T201 -> T101` | `AssignmentStrategyTest.loadBasedSelectsLowestWorkloadRatioTechnician` |
 | TC13 | Priority / Exp Assignment | `P1` vs `P4` tickets; service experience history | `P1` routes to `T201`; `P4` to `T101`; exp picks `T102` | `AssignmentStrategyTest.priorityBasedRoutesP1ToSeniorAndP4ToLowLoadJunior` |
@@ -207,6 +232,11 @@ All **61 automated JUnit 5 / Mockito / MockMvc tests** across **12 test classes*
 | TC16 | Course Similarity | `"Payment application unavailable"`, `"Payment transaction failing"`, `"Unable to make payment"` | All 3 pairwise similarities `>= 0.2` and `< 0.8` | `TfIdfSimilarityEngineTest.coursePaymentExamplesAreAllFlaggedRelated` |
 | TC17 | Duplicate vs Unrelated | Near-identical vs office printer text | Near-identical `>= 0.8`; unrelated `< 0.2` | `TfIdfSimilarityEngineTest.nearIdenticalDescriptionsExceedExactDuplicateThreshold` |
 | TC18 | Observer Routing | Publish `ASSIGNED` (P3), `SLA_APPROACHING` (P1), `SLA_VIOLATED` | P3 -> `IN_APP`; P1/SLA -> `IN_APP`, `EMAIL`, `SMS` to exact targets | `ObserverPatternTest.notificationObserverRoutesP3InAppOnlyAndP1ToMultiChannel` |
+
+### 7.3 Service Integration, Security, SLA, Outage & REST Tests (TC19–TC31)
+
+| ID | Category | Input / Scenario | Expected Outcome | Exact JUnit Class & Method |
+| --- | --- | --- | --- | --- |
 | TC19 | Sync Create Pipeline | Create P1 Payment incident via `IncidentService` | Runs `NEW -> CLASSIFIED -> ASSIGNED`, 3 audits, multi-channel alerts | `IncidentServiceIntegrationTest.createPipelineRunsSynchronouslyAndAuditsAndNotifiesAllSteps` |
 | TC20 | Duplicate Exception | Same reporter submits identical Payment outage `< 10m` | Throws `DuplicateIncidentException`; different symptoms link related | `IncidentServiceIntegrationTest.exactDuplicateThrowsExceptionAndRelatedIncidentsAreLinked` |
 | TC21 | Unassigned Queue | All technicians at `maxLoad`; submit `P4` then `P1` | Stay `CLASSIFIED`; `PriorityQueue` orders `P1` before `P4` | `IncidentServiceIntegrationTest.unassignedQueueOrdersByPriorityWhenAllTechniciansAtMaxLoad` |
@@ -220,6 +250,11 @@ All **61 automated JUnit 5 / Mockito / MockMvc tests** across **12 test classes*
 | TC29 | Outage & Root Cause | 3 open `Database` incidents in 1h, then `Payment` incident | Flags `outageFlagged=true`; sets `"Possible root cause: Database"` | `PhaseDIntelligenceSlaAndApiTest.outageCorrelationAndDependencyRootCauseFlagged` |
 | TC30 | AI, Reports & REST | Past fix match, Gemini fallback, 7d report, `/api/v1/**` + Swagger | `201/200`, `401` anon, `403` wrong role, `4.0` avg feedback | `PhaseDIntelligenceSlaAndApiTest.restApiBasicAuthRoleChecksTransitionsSearchReportsAndSwaggerWork` |
 | TC31 | Cold DB Seed | `dataSeeder.seedIfEmpty()` on empty H2 DB (twice) | Seeds 9 cats, 8 svcs, 4 SLAs, 12 users, 2 teams, 30 incidents; idempotent | `DataSeederTest.seedsCleanEmptyDatabaseAndIsIdempotent` |
+
+### 7.4 Audit & Explicit Exception Handling Tests (TC32–TC41)
+
+| ID | Category | Input / Scenario | Expected Outcome | Exact JUnit Class & Method |
+| --- | --- | --- | --- | --- |
 | TC32 | Role UIs & Catalog CRUD | Login as `emp1`, `tech1`, `lead1`, `sysadmin`, `itmanager`; edit catalog | Distinct `topbar-*` UIs, restart safe, category/service updates work | `AuditVerificationTest.seededRolesAllLoginAndSeeDistinctRoleUisAndDataPersistsAcrossReseed` |
 | TC33 | Illegal Moves (UI + API) | `ASSIGNED -> CLOSED` on UI & REST; `NEW -> CLOSED` domain | `409 Conflict`, friendly error message, zero stack traces | `AuditVerificationTest.illegalTransitionsRejectedInBothWebUiAndRestApiWithFriendlyMessage` |
 | TC34 | All 12 Exceptions | Trigger every `ITSMException` subclass incl. DB & network | Exact HTTP status (`400..502`), friendly message, zero stack traces | `AuditVerificationTest.allTwelveExceptionsTriggeredWithFriendlyMessagesAndNoStackTraces` |
