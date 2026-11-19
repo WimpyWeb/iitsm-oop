@@ -23,7 +23,7 @@ Strict unidirectional layering keeps HTTP/CSRF/Thymeleaf concerns in `controller
 | Boilerplate | Explicit Java + DTO records | Lombok | Lombok hides encapsulation/validation and obscures OOP mechanics in coursework review |
 
 ## 7. Pros & Cons of the Stack
-- **Pros**: Single `./mvnw spring-boot:run` startup, compile-time OOP contracts, zero frontend build step, full CSRF/BCrypt/SQLi/XSS protection out of the box, and 56 automated tests running in ~40s.
+- **Pros**: Single `./mvnw spring-boot:run` startup, compile-time OOP contracts, zero frontend build step, full CSRF/BCrypt/SQLi/XSS protection out of the box, and 61 automated tests.
 - **Cons**: H2 file mode permits only one JVM process at a time; synchronous observer notifications can add slight latency under heavy SMTP traffic; `open-in-view=false` demands careful `@EntityGraph`/`hydrateAssociations` handling.
 
 ## 8. How Java Supports OOP in I-ITSM
