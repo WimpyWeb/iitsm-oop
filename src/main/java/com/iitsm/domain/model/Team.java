@@ -82,7 +82,7 @@ public class Team {
         return name;
     }
 
-    public final void setName(String name) {
+    public void setName(String name) {
         if (name == null || name.isBlank()) {
             throw new InvalidInputException("Team name cannot be blank.");
         }
@@ -93,7 +93,7 @@ public class Team {
         return specialtyCategory;
     }
 
-    public final void setSpecialtyCategory(String specialtyCategory) {
+    public void setSpecialtyCategory(String specialtyCategory) {
         this.specialtyCategory = specialtyCategory == null ? "" : specialtyCategory.trim();
     }
 
@@ -101,7 +101,7 @@ public class Team {
         return teamLead;
     }
 
-    public final void setTeamLead(TeamLead teamLead) {
+    public void setTeamLead(TeamLead teamLead) {
         this.teamLead = teamLead;
         if (teamLead != null) {
             addMember(teamLead);

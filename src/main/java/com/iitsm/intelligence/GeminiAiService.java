@@ -21,7 +21,7 @@ public class GeminiAiService implements AiTextService {
             "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
 
     private final LocalTfIdfAiService localFallback;
-    private final RestClient restClient;
+    private volatile RestClient restClient;
     private final String apiKey;
     private final String modelName;
 
@@ -31,9 +31,22 @@ public class GeminiAiService implements AiTextService {
             @Value("${app.ai.gemini.api-key:}") String apiKey,
             @Value("${app.ai.gemini.model:gemini-2.5-flash}") String modelName) {
         this.localFallback = localFallback;
-        this.restClient = RestClient.create();
         this.apiKey = apiKey == null ? "" : apiKey.trim();
         this.modelName = modelName == null || modelName.isBlank() ? "gemini-2.5-flash" : modelName.trim();
+    }
+
+    private RestClient getRestClient() {
+        RestClient client = this.restClient;
+        if (client == null) {
+            synchronized (this) {
+                client = this.restClient;
+                if (client == null) {
+                    client = RestClient.create();
+                    this.restClient = client;
+                }
+            }
+        }
+        return client;
     }
 
     /** Returns true when a non-blank Gemini API key is configured. */
@@ -91,7 +104,7 @@ public class GeminiAiService implements AiTextService {
         Map<String, Object> body = Map.of(
                 "contents", List.of(Map.of("parts", List.of(Map.of("text", promptText))))
         );
-        Map<String, Object> response = restClient.post()
+        Map<String, Object> response = getRestClient().post()
                 .uri(url)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
